@@ -2,33 +2,17 @@ package main
 
 import (
 	"context"
-	"encoding/json"
-	"io"
 	"log"
-	"math/rand"
 	"net/http"
 	"os"
 	"os/signal"
-	"strconv"
 	"syscall"
 
 	"github.com/gotd/contrib/middleware/floodwait"
 	"github.com/gotd/td/telegram"
-	"github.com/gotd/td/tg"
 
 	"github.com/ikebastuz/tgn/router"
 )
-
-type TelegramUpdate struct {
-	UpdateID int `json:"update_id"`
-	Message  struct {
-		MessageID int `json:"message_id"`
-		From      struct {
-			ID int64 `json:"id"`
-		} `json:"from"`
-		Text string `json:"text"`
-	} `json:"message"`
-}
 
 func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
@@ -58,52 +42,11 @@ func main() {
 
 	log.Println("INFO: Starting bot with token:", botToken[:10]+"...")
 
-	// Create HTTP server
+	// Add healthcheck handler
 	http.HandleFunc("/health", router.HandleHealthCheck)
-
 	// Add webhook handler
 	http.HandleFunc("/webhook", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPost {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-			return
-		}
-
-		body, err := io.ReadAll(r.Body)
-		if err != nil {
-			log.Printf("ERROR: Failed to read request body: %v", err)
-			http.Error(w, "Bad request", http.StatusBadRequest)
-			return
-		}
-
-		log.Printf("INFO: Raw body:", string(body))
-
-		var update TelegramUpdate
-		if err := json.Unmarshal(body, &update); err != nil {
-			log.Printf("ERROR: Failed to parse update: %v", err)
-			http.Error(w, "Bad request", http.StatusBadRequest)
-			return
-		}
-
-		log.Printf("INFO: Received webhook update: %+v", update)
-
-		// Send response back to user
-		response := "Your Telegram ID is: " + strconv.FormatInt(update.Message.From.ID, 10)
-		log.Printf("INFO: Sending response: %s", response)
-
-		// Get user info to construct proper InputPeer
-		_, err = client.API().MessagesSendMessage(ctx, &tg.MessagesSendMessageRequest{
-			Peer:     &tg.InputPeerUser{UserID: update.Message.From.ID},
-			Message:  response,
-			RandomID: rand.Int63(),
-		})
-		if err != nil {
-			log.Printf("ERROR: Failed to send message: %v", err)
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			return
-		}
-
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("OK"))
+		router.HandleWebhook(ctx, client, w, r)
 	})
 
 	// Start HTTP server in a goroutine
