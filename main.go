@@ -15,6 +15,8 @@ import (
 	"github.com/gotd/contrib/middleware/floodwait"
 	"github.com/gotd/td/telegram"
 	"github.com/gotd/td/tg"
+
+	"github.com/ikebastuz/tgn/router"
 )
 
 type TelegramUpdate struct {
@@ -34,8 +36,11 @@ func main() {
 
 	log.Println("INFO: Initializing Telegram bot client...")
 
-	port := "1414"
-	log.Printf("INFO: Server will run on port %s", port)
+	botPort := os.Getenv("BOT_PORT")
+	if botPort == "" {
+		log.Fatal("ERROR: BOT_PORT environment variable is required")
+	}
+	log.Printf("INFO: Server will run on port %s", botPort)
 
 	// Create a new client
 	client := telegram.NewClient(telegram.TestAppID, telegram.TestAppHash, telegram.Options{
@@ -54,10 +59,7 @@ func main() {
 	log.Println("INFO: Starting bot with token:", botToken[:10]+"...")
 
 	// Create HTTP server
-	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("OK"))
-	})
+	http.HandleFunc("/health", router.HandleHealthCheck)
 
 	// Add webhook handler
 	http.HandleFunc("/webhook", func(w http.ResponseWriter, r *http.Request) {
@@ -73,6 +75,8 @@ func main() {
 			return
 		}
 
+		log.Printf("INFO: Raw body:", string(body))
+
 		var update TelegramUpdate
 		if err := json.Unmarshal(body, &update); err != nil {
 			log.Printf("ERROR: Failed to parse update: %v", err)
@@ -87,23 +91,8 @@ func main() {
 		log.Printf("INFO: Sending response: %s", response)
 
 		// Get user info to construct proper InputPeer
-		user, err := client.API().UsersGetUsers(ctx, []tg.InputUserClass{
-			&tg.InputUser{UserID: update.Message.From.ID},
-		})
-		if err != nil {
-			log.Printf("ERROR: Failed to get user info: %v", err)
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			return
-		}
-
-		if len(user) == 0 {
-			log.Printf("ERROR: User not found")
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			return
-		}
-
 		_, err = client.API().MessagesSendMessage(ctx, &tg.MessagesSendMessageRequest{
-			Peer:     &tg.InputPeerUser{UserID: update.Message.From.ID, AccessHash: user[0].(*tg.User).AccessHash},
+			Peer:     &tg.InputPeerUser{UserID: update.Message.From.ID},
 			Message:  response,
 			RandomID: rand.Int63(),
 		})
@@ -119,8 +108,8 @@ func main() {
 
 	// Start HTTP server in a goroutine
 	go func() {
-		log.Printf("INFO: Starting HTTP server on port %s", port)
-		if err := http.ListenAndServe(":"+port, nil); err != nil {
+		log.Printf("INFO: Starting HTTP server on port %s", botPort)
+		if err := http.ListenAndServe(":"+botPort, nil); err != nil {
 			log.Fatalf("ERROR: HTTP server failed: %v", err)
 		}
 	}()
