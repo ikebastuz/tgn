@@ -55,7 +55,7 @@ func HandleWebhook(ctx context.Context, client *telegram.Client, w http.Response
 		return
 	}
 
-	log.Printf("INFO: Raw body:\n%v", string(body))
+	// log.Printf("INFO: Raw body:\n%v", string(body))
 
 	keyboard := &tg.ReplyInlineMarkup{
 		Rows: []tg.KeyboardButtonRow{
@@ -80,7 +80,9 @@ func HandleWebhook(ctx context.Context, client *telegram.Client, w http.Response
 		return
 	}
 
-	log.Printf("INFO: Received webhook update:\n%+v", update)
+	log.Printf("INFO: Received webhook update:\n")
+	update_debug, _ := json.MarshalIndent(update, "", " ")
+	fmt.Println(string(update_debug))
 
 	if update.CallbackQuery.ID != "" {
 		userId := update.CallbackQuery.From.ID
@@ -111,11 +113,11 @@ func HandleWebhook(ctx context.Context, client *telegram.Client, w http.Response
 					Buttons: []tg.KeyboardButtonClass{
 						&tg.KeyboardButtonCallback{
 							Text: fmt.Sprintf("Button %d", btn_a_value),
-							Data: []byte(fmt.Sprintf("%d", btn_a_value)),
+							Data: fmt.Appendf(nil, "%d", btn_a_value),
 						},
 						&tg.KeyboardButtonCallback{
 							Text: fmt.Sprintf("Button %d", btn_b_value),
-							Data: []byte(fmt.Sprintf("%d", btn_b_value)),
+							Data: fmt.Appendf(nil, "%d", btn_b_value),
 						},
 					},
 				},
