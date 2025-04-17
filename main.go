@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 
 	"github.com/gotd/contrib/middleware/floodwait"
@@ -18,6 +19,21 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()
 
+	// TODO: extract ENV handling
+	appIdString := os.Getenv("BOT_APP_ID")
+	if appIdString == "" {
+		log.Fatal("ERROR: BOT_APP_ID environment variable is required")
+	}
+	appId, err := strconv.ParseInt(appIdString, 10, 64)
+	if err != nil {
+		log.Fatal("ERROR: BOT_APP_ID is not a valid number")
+	}
+
+	appHash := os.Getenv("BOT_APP_HASH")
+	if appHash == "" {
+		log.Fatal("ERROR: BOT_APP_HASH environment variable is required")
+	}
+
 	log.Println("INFO: Initializing Telegram bot client...")
 
 	botPort := os.Getenv("BOT_PORT")
@@ -27,7 +43,7 @@ func main() {
 	log.Printf("INFO: Server will run on port %s", botPort)
 
 	// Create a new client
-	client := telegram.NewClient(telegram.TestAppID, telegram.TestAppHash, telegram.Options{
+	client := telegram.NewClient(int(appId), appHash, telegram.Options{
 		// Add middleware for handling flood waits
 		Middlewares: []telegram.Middleware{
 			floodwait.NewSimpleWaiter(),
