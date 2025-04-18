@@ -55,7 +55,9 @@ func HandleWebhook(ctx context.Context, client *telegram.Client, w http.Response
 		return
 	}
 
-	// log.Printf("INFO: Raw body:\n%v", string(body))
+	log.Printf("INFO: Raw body:\n", string(body))
+	body_debug, _ := json.MarshalIndent(body, "", " ")
+	fmt.Println(string(body_debug))
 
 	keyboard := &tg.ReplyInlineMarkup{
 		Rows: []tg.KeyboardButtonRow{
@@ -86,7 +88,7 @@ func HandleWebhook(ctx context.Context, client *telegram.Client, w http.Response
 
 	if update.CallbackQuery.ID != "" {
 		userId := update.CallbackQuery.From.ID
-		response := fmt.Sprintf("Received %s", update.CallbackQuery.Data)
+		response := fmt.Sprintf("Received %s\n/connect_123\n/connect#123", update.CallbackQuery.Data)
 
 		// Example of sending notification (may be good for an error)
 		// queryId, err := strconv.ParseInt(update.CallbackQuery.ID, 10, 64)
