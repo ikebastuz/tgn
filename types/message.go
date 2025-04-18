@@ -1,5 +1,9 @@
 package types
 
+import (
+	"github.com/gotd/td/tg"
+)
+
 type From struct {
 	USERNAME string `json:"username"`
 	IS_BOT   bool   `json:"is_bot"`
@@ -21,4 +25,10 @@ type TelegramUpdate struct {
 		Message Message `json:"message"`
 		Data    string  `json:"data"`
 	} `json:"callback_query"`
+}
+
+type ReplyDTO struct {
+	UserID      string
+	Message     string
+	ReplyMarkup tg.ReplyMarkupClass
 }
