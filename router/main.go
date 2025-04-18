@@ -12,30 +12,10 @@ import (
 
 	"github.com/gotd/td/telegram"
 	"github.com/gotd/td/tg"
+
+	"github.com/ikebastuz/tgn/actions"
+	"github.com/ikebastuz/tgn/types"
 )
-
-type From struct {
-	USERNAME string `json:"username"`
-	IS_BOT   bool   `json:"is_bot"`
-	ID       int64  `json:"id"`
-}
-
-type Message struct {
-	MessageID int    `json:"message_id"`
-	From      From   `json:"from"`
-	Text      string `json:"text"`
-}
-
-type TelegramUpdate struct {
-	UpdateID      int     `json:"update_id"`
-	Message       Message `json:"message"`
-	CallbackQuery struct {
-		ID      string  `json:"id"`
-		From    From    `json:"from"`
-		Message Message `json:"message"`
-		Data    string  `json:"data"`
-	} `json:"callback_query"`
-}
 
 func HandleHealthCheck(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
@@ -55,7 +35,7 @@ func HandleWebhook(ctx context.Context, client *telegram.Client, w http.Response
 		return
 	}
 
-	log.Printf("INFO: Raw body:\n", string(body))
+	log.Print("INFO: Raw body:\n", string(body))
 	body_debug, _ := json.MarshalIndent(body, "", " ")
 	fmt.Println(string(body_debug))
 
@@ -63,19 +43,13 @@ func HandleWebhook(ctx context.Context, client *telegram.Client, w http.Response
 		Rows: []tg.KeyboardButtonRow{
 			{
 				Buttons: []tg.KeyboardButtonClass{
-					&tg.KeyboardButtonCallback{
-						Text: "Button 1",
-						Data: []byte("button1"),
-					},
-					&tg.KeyboardButtonCallback{
-						Text: "Button 2",
-						Data: []byte("button2"),
-					},
+					actions.BUTTON_SELECT_EMPLOYEE,
+					actions.BUTTON_SELECT_EMPLOYER,
 				},
 			},
 		},
 	}
-	var update TelegramUpdate
+	var update types.TelegramUpdate
 	if err := json.Unmarshal(body, &update); err != nil {
 		log.Printf("ERROR: Failed to parse update: %v", err)
 		http.Error(w, "Bad request", http.StatusBadRequest)
