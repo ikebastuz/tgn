@@ -16,15 +16,17 @@ type Message struct {
 	Text      string `json:"text"`
 }
 
+type CallbackQuery struct {
+	ID      string  `json:"id"`
+	From    From    `json:"from"`
+	Message Message `json:"message"`
+	Data    string  `json:"data"`
+}
+
 type TelegramUpdate struct {
-	UpdateID      int     `json:"update_id"`
-	Message       Message `json:"message"`
-	CallbackQuery struct {
-		ID      string  `json:"id"`
-		From    From    `json:"from"`
-		Message Message `json:"message"`
-		Data    string  `json:"data"`
-	} `json:"callback_query"`
+	UpdateID      int           `json:"update_id"`
+	Message       Message       `json:"message"`
+	CallbackQuery CallbackQuery `json:"callback_query"`
 }
 
 type ReplyDTO struct {
