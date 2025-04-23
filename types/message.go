@@ -30,7 +30,7 @@ type TelegramUpdate struct {
 }
 
 type ReplyDTO struct {
-	UserID      string
+	UserID      int64
 	Message     string
 	ReplyMarkup tg.ReplyMarkupClass
 }

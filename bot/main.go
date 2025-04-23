@@ -10,21 +10,38 @@ var (
 	ErrorNoSenderIdFound = errors.New("no sender ID found in message")
 )
 
+const (
+	FORWARD_CONNECTION_MESSAGE = "Forward this message\n/connect"
+)
+
 func HandleMessage(update types.TelegramUpdate, store types.Store) {
 	createReply(update, store)
 }
 
-func createReply(update types.TelegramUpdate, store types.Store) (types.ReplyDTO, error) {
-	return types.ReplyDTO{
-		Message: update.Message.Text,
-	}, nil
-}
-
-func GetDialogState(update types.TelegramUpdate, store types.Store) (*types.DialogState, error) {
+func createReply(update types.TelegramUpdate, store types.Store) (*types.ReplyDTO, error) {
 	userId, err := getSenderId(update)
 	if err != nil {
-		return nil, ErrorNoSenderIdFound
+		return nil, err
 	}
+	dialogState, err := getDialogState(userId, store)
+
+	if err != nil {
+		return nil, err
+	}
+
+	switch dialogState.State {
+	case types.STATE_INITIAL:
+		return &types.ReplyDTO{
+			UserID:      userId,
+			Message:     createConnectionMessage(userId),
+			ReplyMarkup: nil,
+		}, nil
+	default:
+		return &types.ReplyDTO{}, nil
+	}
+}
+
+func getDialogState(userId int64, store types.Store) (*types.DialogState, error) {
 	dialogState := store.GetDialogState(userId)
 	return dialogState, nil
 }
