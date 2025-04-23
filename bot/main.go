@@ -77,8 +77,3 @@ func createReply(update types.TelegramUpdate, store types.Store) (*types.ReplyDT
 		return nil, nil
 	}
 }
-
-func getDialogState(userId int64, store types.Store) (*types.DialogState, error) {
-	dialogState := store.GetDialogState(userId)
-	return dialogState, nil
-}
