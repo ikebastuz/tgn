@@ -28,12 +28,13 @@ func HandleMessage(ctx context.Context, client *telegram.Client, update types.Te
 	}
 
 	for _, reply := range replies {
-		if reply.MessageID > 0 {
+		message := reply.Message
+		if message.MessageID > 0 {
 			_, err = client.API().MessagesEditMessage(ctx, &tg.MessagesEditMessageRequest{
-				ID:          update.CallbackQuery.Message.MessageID,
-				Peer:        &tg.InputPeerUser{UserID: reply.UserID},
-				Message:     reply.Message,
-				ReplyMarkup: reply.ReplyMarkup,
+				ID:          message.MessageID,
+				Peer:        &tg.InputPeerUser{UserID: message.UserID},
+				Message:     message.Message,
+				ReplyMarkup: message.ReplyMarkup,
 			})
 
 			if err != nil {
@@ -44,9 +45,9 @@ func HandleMessage(ctx context.Context, client *telegram.Client, update types.Te
 		} else {
 			_, err = client.API().MessagesSendMessage(ctx, &tg.MessagesSendMessageRequest{
 				RandomID:    rand.Int63(),
-				Peer:        &tg.InputPeerUser{UserID: reply.UserID},
-				Message:     reply.Message,
-				ReplyMarkup: reply.ReplyMarkup,
+				Peer:        &tg.InputPeerUser{UserID: message.UserID},
+				Message:     message.Message,
+				ReplyMarkup: message.ReplyMarkup,
 			})
 			if err != nil {
 				log.Printf("ERROR: Failed to send message: %v", err)
@@ -74,14 +75,18 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 	case types.STATE_INITIAL:
 		return []types.ReplyDTO{
 			{
-				UserID:      userData.ID,
-				Message:     createConnectionMessage(*userData),
-				ReplyMarkup: nil,
+				Message: types.ReplyMessage{
+					UserID:      userData.ID,
+					Message:     createConnectionMessage(*userData),
+					ReplyMarkup: nil,
+				},
 			},
 			{
-				UserID:      userData.ID,
-				Message:     FORWARD_CONNECTION_MESSAGE_02,
-				ReplyMarkup: nil,
+				Message: types.ReplyMessage{
+					UserID:      userData.ID,
+					Message:     FORWARD_CONNECTION_MESSAGE_02,
+					ReplyMarkup: nil,
+				},
 			},
 		}, nil
 	default:

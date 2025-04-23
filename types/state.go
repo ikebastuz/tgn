@@ -8,8 +8,9 @@ const (
 )
 
 type DialogState struct {
-	State      State
-	OpponentId *int64
-	LowerBound *int64
-	UpperBound *int64
+	State           State
+	AnchorMessageId *int
+	OpponentId      *int64
+	LowerBound      *int64
+	UpperBound      *int64
 }

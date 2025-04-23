@@ -39,14 +39,18 @@ func TestCreateReply(t *testing.T) {
 		}
 		want := []types.ReplyDTO{
 			{
-				UserID:      FROM.ID,
-				Message:     createConnectionMessage(FROM),
-				ReplyMarkup: nil,
+				Message: types.ReplyMessage{
+					UserID:      FROM.ID,
+					Message:     createConnectionMessage(FROM),
+					ReplyMarkup: nil,
+				},
 			},
 			{
-				UserID:      FROM.ID,
-				Message:     FORWARD_CONNECTION_MESSAGE_02,
-				ReplyMarkup: nil,
+				Message: types.ReplyMessage{
+					UserID:      FROM.ID,
+					Message:     FORWARD_CONNECTION_MESSAGE_02,
+					ReplyMarkup: nil,
+				},
 			},
 		}
 
@@ -68,31 +72,6 @@ func TestCreateReply(t *testing.T) {
 			t.Errorf("expected %v, got %v", want, got)
 		}
 	})
-	// t.Run("should return telegram ID if user is not in store", func(t *testing.T) {
-	// 	store := NewInMemoryStore()
-	// 	want := "hello"
-	// 	update := types.TelegramUpdate{
-	// 		UpdateID: 1,
-	// 		Message: types.Message{
-	// 			MessageID: 1,
-	// 			Text:      want,
-	// 			From: types.From{
-	// 				USERNAME: "",
-	// 				IS_BOT:   false,
-	// 				ID:       1,
-	// 			},
-	// 		},
-	// 	}
-	//
-	// 	reply, err := createReply(update, store)
-	// 	if err != nil {
-	// 		t.Errorf("shouldn't have error")
-	// 	}
-	//
-	// 	if reply.Message != want {
-	// 		t.Errorf("expected %v, got %v", want, reply.Message)
-	// 	}
-	// })
 }
 
 func TestGetSenderId(t *testing.T) {

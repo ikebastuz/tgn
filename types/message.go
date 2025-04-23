@@ -29,9 +29,14 @@ type TelegramUpdate struct {
 	CallbackQuery CallbackQuery `json:"callback_query"`
 }
 
-type ReplyDTO struct {
+type ReplyMessage struct {
 	UserID      int64
 	MessageID   int
 	Message     string
 	ReplyMarkup tg.ReplyMarkupClass
+}
+
+type ReplyDTO struct {
+	Message   ReplyMessage
+	NextState *DialogState
 }
