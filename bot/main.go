@@ -16,7 +16,8 @@ var (
 )
 
 const (
-	FORWARD_CONNECTION_MESSAGE = "Forward this message to the person\nyou want to negotiate with\n\nTo join - type\n/connect"
+	FORWARD_CONNECTION_MESSAGE_01 = "To join %s - type\n/connect %v"
+	FORWARD_CONNECTION_MESSAGE_02 = "Forward this ☝️ message to person\nyou want to negotiate with"
 )
 
 func HandleMessage(ctx context.Context, client *telegram.Client, update types.TelegramUpdate, store types.Store) error {
@@ -59,12 +60,12 @@ func HandleMessage(ctx context.Context, client *telegram.Client, update types.Te
 }
 
 func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyDTO, error) {
-	userId, err := getSenderId(update)
+	userData, err := getUserData(update)
 	if err != nil {
 		return nil, err
 	}
 
-	dialogState, err := getDialogState(userId, store)
+	dialogState, err := getDialogState(userData.ID, store)
 	if err != nil {
 		return nil, err
 	}
@@ -73,8 +74,13 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 	case types.STATE_INITIAL:
 		return []types.ReplyDTO{
 			{
-				UserID:      userId,
-				Message:     createConnectionMessage(userId),
+				UserID:      userData.ID,
+				Message:     createConnectionMessage(*userData),
+				ReplyMarkup: nil,
+			},
+			{
+				UserID:      userData.ID,
+				Message:     FORWARD_CONNECTION_MESSAGE_02,
 				ReplyMarkup: nil,
 			},
 		}, nil

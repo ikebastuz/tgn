@@ -5,21 +5,19 @@ import (
 	"github.com/ikebastuz/tgn/types"
 )
 
-func createConnectionMessage(userId int64) string {
-	return fmt.Sprintf("%s %v", FORWARD_CONNECTION_MESSAGE, userId)
+func createConnectionMessage(userData types.From) string {
+	return fmt.Sprintf(FORWARD_CONNECTION_MESSAGE_01, userData.USERNAME, userData.ID)
 }
 
-func getSenderId(update types.TelegramUpdate) (int64, error) {
+func getUserData(update types.TelegramUpdate) (*types.From, error) {
 	if update.CallbackQuery.From.ID > 0 {
-		userId := update.CallbackQuery.From.ID
-		return userId, nil
+		return &update.CallbackQuery.From, nil
 	}
 	if update.Message.From.ID > 0 {
-		userId := update.Message.From.ID
-		return userId, nil
+		return &update.Message.From, nil
 	}
 
-	return 0, ErrorNoSenderIdFound
+	return nil, ErrorNoSenderIdFound
 }
 
 func getDialogState(userId int64, store types.Store) (*types.DialogState, error) {

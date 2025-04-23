@@ -33,22 +33,29 @@ func TestGetDialogState(t *testing.T) {
 func TestCreateReply(t *testing.T) {
 	t.Run("should ask user to forward connection message", func(t *testing.T) {
 		store := NewInMemoryStore()
-		want := []types.ReplyDTO{{
-			UserID:      1,
-			Message:     createConnectionMessage(1),
-			ReplyMarkup: nil,
-		}}
+		var FROM = types.From{
+			ID:       int64(123),
+			USERNAME: "hello",
+		}
+		want := []types.ReplyDTO{
+			{
+				UserID:      FROM.ID,
+				Message:     createConnectionMessage(FROM),
+				ReplyMarkup: nil,
+			},
+			{
+				UserID:      FROM.ID,
+				Message:     FORWARD_CONNECTION_MESSAGE_02,
+				ReplyMarkup: nil,
+			},
+		}
 
 		update := types.TelegramUpdate{
 			UpdateID: 1,
 			Message: types.Message{
 				MessageID: 1,
 				Text:      "",
-				From: types.From{
-					USERNAME: "",
-					IS_BOT:   false,
-					ID:       1,
-				},
+				From:      FROM,
 			},
 		}
 
@@ -89,39 +96,38 @@ func TestCreateReply(t *testing.T) {
 }
 
 func TestGetSenderId(t *testing.T) {
-	const USER_ID = int64(123)
+	var FROM = &types.From{
+		ID:       int64(123),
+		USERNAME: "hello",
+	}
 
 	t.Run("should return correct sender id from Message", func(t *testing.T) {
 		update := types.TelegramUpdate{
 			Message: types.Message{
-				From: types.From{
-					ID: USER_ID,
-				},
+				From: *FROM,
 			},
 		}
-		got, _ := getSenderId(update)
-		if got != USER_ID {
-			t.Errorf("expected state %v, got %v", USER_ID, got)
+		got, _ := getUserData(update)
+		if !reflect.DeepEqual(got, FROM) {
+			t.Errorf("expected state %v, got %v", FROM, got)
 		}
 	})
 
 	t.Run("should return correct sender id from Callback", func(t *testing.T) {
 		update := types.TelegramUpdate{
 			CallbackQuery: types.CallbackQuery{
-				From: types.From{
-					ID: USER_ID,
-				},
+				From: *FROM,
 			},
 		}
-		got, _ := getSenderId(update)
-		if got != USER_ID {
-			t.Errorf("expected state %v, got %v", USER_ID, got)
+		got, _ := getUserData(update)
+		if !reflect.DeepEqual(got, FROM) {
+			t.Errorf("expected state %v, got %v", FROM, got)
 		}
 	})
 
 	t.Run("should throw an error if no sender id exists", func(t *testing.T) {
 		update := types.TelegramUpdate{}
-		_, err := getSenderId(update)
+		_, err := getUserData(update)
 		if err == nil || err != ErrorNoSenderIdFound {
 			t.Errorf("expected error")
 		}
