@@ -1,8 +1,13 @@
 package bot
 
 import (
+	"context"
 	"errors"
+	"log"
+	"math/rand"
 
+	"github.com/gotd/td/telegram"
+	"github.com/gotd/td/tg"
 	"github.com/ikebastuz/tgn/types"
 )
 
@@ -11,11 +16,43 @@ var (
 )
 
 const (
-	FORWARD_CONNECTION_MESSAGE = "Forward this message\n/connect"
+	FORWARD_CONNECTION_MESSAGE = "Forward this message to the person\nyou want to negotiate with\n\nTo join - type\n/connect"
 )
 
-func HandleMessage(update types.TelegramUpdate, store types.Store) {
-	createReply(update, store)
+func HandleMessage(ctx context.Context, client *telegram.Client, update types.TelegramUpdate, store types.Store) error {
+	reply, err := createReply(update, store)
+
+	if err != nil {
+		return err
+	}
+
+	if reply.MessageID > 0 {
+		_, err = client.API().MessagesEditMessage(ctx, &tg.MessagesEditMessageRequest{
+			ID:          update.CallbackQuery.Message.MessageID,
+			Peer:        &tg.InputPeerUser{UserID: reply.UserID},
+			Message:     reply.Message,
+			ReplyMarkup: reply.ReplyMarkup,
+		})
+
+		if err != nil {
+			log.Printf("ERROR: Failed to edit message: %v", err)
+			return err
+		}
+	} else {
+		_, err = client.API().MessagesSendMessage(ctx, &tg.MessagesSendMessageRequest{
+			RandomID:    rand.Int63(),
+			Peer:        &tg.InputPeerUser{UserID: reply.UserID},
+			Message:     reply.Message,
+			ReplyMarkup: reply.ReplyMarkup,
+		})
+		if err != nil {
+			log.Printf("ERROR: Failed to send message: %v", err)
+			return err
+		}
+	}
+
+	// TODO: advance state
+	return nil
 }
 
 func createReply(update types.TelegramUpdate, store types.Store) (*types.ReplyDTO, error) {
@@ -23,8 +60,8 @@ func createReply(update types.TelegramUpdate, store types.Store) (*types.ReplyDT
 	if err != nil {
 		return nil, err
 	}
-	dialogState, err := getDialogState(userId, store)
 
+	dialogState, err := getDialogState(userId, store)
 	if err != nil {
 		return nil, err
 	}
@@ -37,24 +74,11 @@ func createReply(update types.TelegramUpdate, store types.Store) (*types.ReplyDT
 			ReplyMarkup: nil,
 		}, nil
 	default:
-		return &types.ReplyDTO{}, nil
+		return nil, nil
 	}
 }
 
 func getDialogState(userId int64, store types.Store) (*types.DialogState, error) {
 	dialogState := store.GetDialogState(userId)
 	return dialogState, nil
-}
-
-func getSenderId(update types.TelegramUpdate) (int64, error) {
-	if update.CallbackQuery.From.ID > 0 {
-		userId := update.CallbackQuery.From.ID
-		return userId, nil
-	}
-	if update.Message.From.ID > 0 {
-		userId := update.Message.From.ID
-		return userId, nil
-	}
-
-	return 0, ErrorNoSenderIdFound
 }

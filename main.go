@@ -11,6 +11,7 @@ import (
 	"github.com/gotd/contrib/middleware/floodwait"
 	"github.com/gotd/td/telegram"
 
+	"github.com/ikebastuz/tgn/bot"
 	"github.com/ikebastuz/tgn/router"
 )
 
@@ -32,6 +33,7 @@ func main() {
 			floodwait.NewSimpleWaiter(),
 		},
 	})
+	store := bot.NewInMemoryStore()
 
 	log.Println("INFO: Starting bot with token:", config.TOKEN[:10]+"...")
 
@@ -39,7 +41,7 @@ func main() {
 	http.HandleFunc("/health", router.HandleHealthCheck)
 	// Add webhook handler
 	http.HandleFunc("/webhook", func(w http.ResponseWriter, r *http.Request) {
-		router.HandleWebhook(ctx, client, w, r)
+		router.HandleWebhook(ctx, client, store, w, r)
 	})
 
 	// Start HTTP server in a goroutine
