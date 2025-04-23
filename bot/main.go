@@ -16,19 +16,26 @@ var (
 )
 
 const (
-	FORWARD_CONNECTION_MESSAGE_01 = "To join %s - type\n/connect %v"
-	FORWARD_CONNECTION_MESSAGE_02 = "Forward this ☝️ message to person\nyou want to negotiate with"
+	MESSAGE_FORWARD_CONNECTION_01  = "To join %s - type\n/connect %v"
+	MESSAGE_FORWARD_CONNECTION_02  = "Forward this ☝️ message to person\nyou want to negotiate with"
+	MESSAGE_WAITING_FOR_CONNECTION = "Waiting for connection"
 )
 
 func HandleMessage(ctx context.Context, client *telegram.Client, update types.TelegramUpdate, store types.Store) error {
 	replies, err := createReply(update, store)
+	if err != nil {
+		return err
+	}
 
+	userData, err := getUserData(update)
 	if err != nil {
 		return err
 	}
 
 	for _, reply := range replies {
 		message := reply.Message
+		nextState := reply.NextState
+
 		if message.MessageID > 0 {
 			_, err = client.API().MessagesEditMessage(ctx, &tg.MessagesEditMessageRequest{
 				ID:          message.MessageID,
@@ -41,7 +48,10 @@ func HandleMessage(ctx context.Context, client *telegram.Client, update types.Te
 				log.Printf("ERROR: Failed to edit message: %v", err)
 				return err
 			}
-			// TODO: advance state
+
+			if nextState != nil {
+				store.SetDialogState(userData.ID, nextState)
+			}
 		} else {
 			_, err = client.API().MessagesSendMessage(ctx, &tg.MessagesSendMessageRequest{
 				RandomID:    rand.Int63(),
@@ -53,7 +63,9 @@ func HandleMessage(ctx context.Context, client *telegram.Client, update types.Te
 				log.Printf("ERROR: Failed to send message: %v", err)
 				return err
 			}
-			// TODO: advance state
+			if nextState != nil {
+				store.SetDialogState(userData.ID, nextState)
+			}
 		}
 	}
 
@@ -80,15 +92,29 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 					Message:     createConnectionMessage(*userData),
 					ReplyMarkup: nil,
 				},
+				NextState: &types.DialogState{
+					State: types.WAITING_FOR_CONNECT,
+				},
 			},
 			{
 				Message: types.ReplyMessage{
 					UserID:      userData.ID,
-					Message:     FORWARD_CONNECTION_MESSAGE_02,
+					Message:     MESSAGE_FORWARD_CONNECTION_02,
 					ReplyMarkup: nil,
 				},
 			},
 		}, nil
+	case types.WAITING_FOR_CONNECT:
+		return []types.ReplyDTO{
+			{
+				Message: types.ReplyMessage{
+					UserID:      userData.ID,
+					Message:     MESSAGE_WAITING_FOR_CONNECTION,
+					ReplyMarkup: nil,
+				},
+			},
+		}, nil
+
 	default:
 		return nil, nil
 	}

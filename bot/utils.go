@@ -6,7 +6,7 @@ import (
 )
 
 func createConnectionMessage(userData types.From) string {
-	return fmt.Sprintf(FORWARD_CONNECTION_MESSAGE_01, userData.USERNAME, userData.ID)
+	return fmt.Sprintf(MESSAGE_FORWARD_CONNECTION_01, userData.USERNAME, userData.ID)
 }
 
 func getUserData(update types.TelegramUpdate) (*types.From, error) {

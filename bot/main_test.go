@@ -16,25 +16,15 @@ func TestGetDialogState(t *testing.T) {
 			t.Errorf("expected state %v, got %v", want, got.State)
 		}
 	})
-
-	// t.Run("should update store by reference", func(t *testing.T) {
-	// 	store := Store{
-	// 		count: 0,
-	// 	}
-	// 	update := types.TelegramUpdate{}
-	// 	want := int64(1)
-	// 	HandleMessage(update, &store)
-	// 	if store.count != want {
-	// 		t.Errorf("expected %v, got %v", want, store.count)
-	// 	}
-	// })
 }
 
 func TestCreateReply(t *testing.T) {
-	t.Run("should ask user to forward connection message", func(t *testing.T) {
+	const USER_ID = 123
+
+	t.Run("state - INITIAL and it is not a 'connect' message - should ask user to forward connection message", func(t *testing.T) {
 		store := NewInMemoryStore()
 		var FROM = types.From{
-			ID:       int64(123),
+			ID:       int64(USER_ID),
 			USERNAME: "hello",
 		}
 		want := []types.ReplyDTO{
@@ -44,11 +34,49 @@ func TestCreateReply(t *testing.T) {
 					Message:     createConnectionMessage(FROM),
 					ReplyMarkup: nil,
 				},
+				NextState: &types.DialogState{
+					State: types.WAITING_FOR_CONNECT,
+				},
 			},
 			{
 				Message: types.ReplyMessage{
 					UserID:      FROM.ID,
-					Message:     FORWARD_CONNECTION_MESSAGE_02,
+					Message:     MESSAGE_FORWARD_CONNECTION_02,
+					ReplyMarkup: nil,
+				},
+			},
+		}
+
+		update := types.TelegramUpdate{
+			UpdateID: 1,
+			Message: types.Message{
+				MessageID: 1,
+				Text:      "",
+				From:      FROM,
+			},
+		}
+
+		got, err := createReply(update, store)
+		if err != nil {
+			t.Errorf("shouldn't have error")
+		}
+
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("expected %v, got %v", want, got)
+		}
+	})
+	t.Run("state - WAITING for connection - should tell about waiting for connection", func(t *testing.T) {
+		store := NewInMemoryStore()
+		store.SetDialogState(USER_ID, &types.DialogState{State: types.WAITING_FOR_CONNECT})
+		var FROM = types.From{
+			ID:       int64(USER_ID),
+			USERNAME: "hello",
+		}
+		want := []types.ReplyDTO{
+			{
+				Message: types.ReplyMessage{
+					UserID:      FROM.ID,
+					Message:     MESSAGE_WAITING_FOR_CONNECTION,
 					ReplyMarkup: nil,
 				},
 			},
