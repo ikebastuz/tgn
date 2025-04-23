@@ -2,23 +2,12 @@ package bot
 
 import (
 	"context"
-	"errors"
 	"log"
 	"math/rand"
 
 	"github.com/gotd/td/telegram"
 	"github.com/gotd/td/tg"
 	"github.com/ikebastuz/tgn/types"
-)
-
-var (
-	ErrorNoSenderIdFound = errors.New("no sender ID found in message")
-)
-
-const (
-	MESSAGE_FORWARD_CONNECTION_01  = "To join %s - type\n/connect %v"
-	MESSAGE_FORWARD_CONNECTION_02  = "Forward this ☝️ message to person\nyou want to negotiate with"
-	MESSAGE_WAITING_FOR_CONNECTION = "Waiting for connection"
 )
 
 func HandleMessage(ctx context.Context, client *telegram.Client, update types.TelegramUpdate, store types.Store) error {
