@@ -20,42 +20,45 @@ const (
 )
 
 func HandleMessage(ctx context.Context, client *telegram.Client, update types.TelegramUpdate, store types.Store) error {
-	reply, err := createReply(update, store)
+	replies, err := createReply(update, store)
 
 	if err != nil {
 		return err
 	}
 
-	if reply.MessageID > 0 {
-		_, err = client.API().MessagesEditMessage(ctx, &tg.MessagesEditMessageRequest{
-			ID:          update.CallbackQuery.Message.MessageID,
-			Peer:        &tg.InputPeerUser{UserID: reply.UserID},
-			Message:     reply.Message,
-			ReplyMarkup: reply.ReplyMarkup,
-		})
+	for _, reply := range replies {
+		if reply.MessageID > 0 {
+			_, err = client.API().MessagesEditMessage(ctx, &tg.MessagesEditMessageRequest{
+				ID:          update.CallbackQuery.Message.MessageID,
+				Peer:        &tg.InputPeerUser{UserID: reply.UserID},
+				Message:     reply.Message,
+				ReplyMarkup: reply.ReplyMarkup,
+			})
 
-		if err != nil {
-			log.Printf("ERROR: Failed to edit message: %v", err)
-			return err
-		}
-	} else {
-		_, err = client.API().MessagesSendMessage(ctx, &tg.MessagesSendMessageRequest{
-			RandomID:    rand.Int63(),
-			Peer:        &tg.InputPeerUser{UserID: reply.UserID},
-			Message:     reply.Message,
-			ReplyMarkup: reply.ReplyMarkup,
-		})
-		if err != nil {
-			log.Printf("ERROR: Failed to send message: %v", err)
-			return err
+			if err != nil {
+				log.Printf("ERROR: Failed to edit message: %v", err)
+				return err
+			}
+			// TODO: advance state
+		} else {
+			_, err = client.API().MessagesSendMessage(ctx, &tg.MessagesSendMessageRequest{
+				RandomID:    rand.Int63(),
+				Peer:        &tg.InputPeerUser{UserID: reply.UserID},
+				Message:     reply.Message,
+				ReplyMarkup: reply.ReplyMarkup,
+			})
+			if err != nil {
+				log.Printf("ERROR: Failed to send message: %v", err)
+				return err
+			}
+			// TODO: advance state
 		}
 	}
 
-	// TODO: advance state
 	return nil
 }
 
-func createReply(update types.TelegramUpdate, store types.Store) (*types.ReplyDTO, error) {
+func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyDTO, error) {
 	userId, err := getSenderId(update)
 	if err != nil {
 		return nil, err
@@ -68,10 +71,12 @@ func createReply(update types.TelegramUpdate, store types.Store) (*types.ReplyDT
 
 	switch dialogState.State {
 	case types.STATE_INITIAL:
-		return &types.ReplyDTO{
-			UserID:      userId,
-			Message:     createConnectionMessage(userId),
-			ReplyMarkup: nil,
+		return []types.ReplyDTO{
+			{
+				UserID:      userId,
+				Message:     createConnectionMessage(userId),
+				ReplyMarkup: nil,
+			},
 		}, nil
 	default:
 		return nil, nil

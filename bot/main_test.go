@@ -1,6 +1,7 @@
 package bot
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/ikebastuz/tgn/types"
@@ -32,11 +33,11 @@ func TestGetDialogState(t *testing.T) {
 func TestCreateReply(t *testing.T) {
 	t.Run("should ask user to forward connection message", func(t *testing.T) {
 		store := NewInMemoryStore()
-		want := types.ReplyDTO{
+		want := []types.ReplyDTO{{
 			UserID:      1,
 			Message:     createConnectionMessage(1),
 			ReplyMarkup: nil,
-		}
+		}}
 
 		update := types.TelegramUpdate{
 			UpdateID: 1,
@@ -56,7 +57,7 @@ func TestCreateReply(t *testing.T) {
 			t.Errorf("shouldn't have error")
 		}
 
-		if *got != want {
+		if !reflect.DeepEqual(got, want) {
 			t.Errorf("expected %v, got %v", want, got)
 		}
 	})

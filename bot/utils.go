@@ -21,3 +21,8 @@ func getSenderId(update types.TelegramUpdate) (int64, error) {
 
 	return 0, ErrorNoSenderIdFound
 }
+
+func getDialogState(userId int64, store types.Store) (*types.DialogState, error) {
+	dialogState := store.GetDialogState(userId)
+	return dialogState, nil
+}
