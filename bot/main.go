@@ -37,10 +37,6 @@ func HandleMessage(ctx context.Context, client *telegram.Client, update types.Te
 				log.Printf("ERROR: Failed to edit message: %v", err)
 				return err
 			}
-
-			if nextState != nil {
-				store.SetDialogState(userData.ID, nextState)
-			}
 		} else {
 			_, err = client.API().MessagesSendMessage(ctx, &tg.MessagesSendMessageRequest{
 				RandomID:    rand.Int63(),
@@ -52,9 +48,10 @@ func HandleMessage(ctx context.Context, client *telegram.Client, update types.Te
 				log.Printf("ERROR: Failed to send message: %v", err)
 				return err
 			}
-			if nextState != nil {
-				store.SetDialogState(userData.ID, nextState)
-			}
+		}
+
+		if nextState != nil {
+			store.SetDialogState(userData.ID, nextState)
 		}
 	}
 

@@ -1,6 +1,7 @@
 package bot
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -137,6 +138,44 @@ func TestGetSenderId(t *testing.T) {
 		_, err := getUserData(update)
 		if err == nil || err != ErrorNoSenderIdFound {
 			t.Errorf("expected error")
+		}
+	})
+}
+
+func TestGetConnectionId(t *testing.T) {
+	t.Run("should not have id if message has no '/connect'", func(t *testing.T) {
+		update := types.TelegramUpdate{}
+		_, isConnection := getConnectionId(&update)
+		if isConnection != false {
+			t.Errorf("should be false")
+		}
+	})
+
+	t.Run("should not have id if message has '/connect' but no id", func(t *testing.T) {
+		update := types.TelegramUpdate{
+			Message: types.Message{
+				Text: " /connect ",
+			},
+		}
+		_, isConnection := getConnectionId(&update)
+		if isConnection != false {
+			t.Errorf("should be false")
+		}
+	})
+
+	t.Run("should have id if connection message follows the correct pattern", func(t *testing.T) {
+		const USER_ID = 123
+		update := types.TelegramUpdate{
+			Message: types.Message{
+				Text: fmt.Sprintf("    /connect     %d     ", USER_ID),
+			},
+		}
+		id, isConnection := getConnectionId(&update)
+		if isConnection != true {
+			t.Errorf("should be true")
+		}
+		if id != USER_ID {
+			t.Errorf("wrong user id, wanted %d, got %d", USER_ID, id)
 		}
 	})
 }
