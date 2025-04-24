@@ -71,6 +71,34 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 
 	switch dialogState.State {
 	case types.STATE_INITIAL:
+		connectionId, isConnectionMessage := getConnectionId(&update)
+
+		if isConnectionMessage {
+			if connectionId == userData.ID {
+				return []types.ReplyDTO{
+					{
+						Message: types.ReplyMessage{
+							UserID:      userData.ID,
+							Message:     MESSAGE_YOU_CANT_CONNECT_TO_YOURSELF,
+							ReplyMarkup: nil,
+						},
+					},
+				}, nil
+			}
+			if store.GetDialogState(connectionId).State != types.WAITING_FOR_CONNECT {
+				return []types.ReplyDTO{
+					{
+						Message: types.ReplyMessage{
+							UserID:      userData.ID,
+							Message:     MESSAGE_NO_SUCH_USER_IS_AWATING,
+							ReplyMarkup: nil,
+						},
+					},
+				}, nil
+			}
+			// TODO: handle connection here
+			return []types.ReplyDTO{}, nil
+		}
 		return []types.ReplyDTO{
 			{
 				Message: types.ReplyMessage{

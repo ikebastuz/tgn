@@ -21,13 +21,13 @@ func TestGetDialogState(t *testing.T) {
 
 func TestCreateReply(t *testing.T) {
 	const USER_ID = 123
+	var FROM = types.From{
+		ID:       int64(USER_ID),
+		USERNAME: "hello",
+	}
 
 	t.Run("state - INITIAL and it is not a 'connect' message - should ask user to forward connection message", func(t *testing.T) {
 		store := NewInMemoryStore()
-		var FROM = types.From{
-			ID:       int64(USER_ID),
-			USERNAME: "hello",
-		}
 		want := []types.ReplyDTO{
 			{
 				Message: types.ReplyMessage{
@@ -49,22 +49,57 @@ func TestCreateReply(t *testing.T) {
 		}
 
 		update := types.TelegramUpdate{
-			UpdateID: 1,
 			Message: types.Message{
-				MessageID: 1,
-				Text:      "",
-				From:      FROM,
+				From: FROM,
 			},
 		}
 
 		got, err := createReply(update, store)
-		if err != nil {
-			t.Errorf("shouldn't have error")
+		assertNonErrorReply(t, got, want, err)
+	})
+	t.Run("state - INITIAL and is a 'connect' message to yourself - should show an error", func(t *testing.T) {
+		store := NewInMemoryStore()
+		want := []types.ReplyDTO{
+			{
+				Message: types.ReplyMessage{
+					UserID:      FROM.ID,
+					Message:     MESSAGE_YOU_CANT_CONNECT_TO_YOURSELF,
+					ReplyMarkup: nil,
+				},
+			},
 		}
 
-		if !reflect.DeepEqual(got, want) {
-			t.Errorf("expected %v, got %v", want, got)
+		update := types.TelegramUpdate{
+			Message: types.Message{
+				Text: fmt.Sprintf("/connect %d", USER_ID),
+				From: FROM,
+			},
 		}
+
+		got, err := createReply(update, store)
+		assertNonErrorReply(t, got, want, err)
+	})
+	t.Run("state - INITIAL and is a 'connect' message to non-existent user - should show an error", func(t *testing.T) {
+		store := NewInMemoryStore()
+		want := []types.ReplyDTO{
+			{
+				Message: types.ReplyMessage{
+					UserID:      FROM.ID,
+					Message:     MESSAGE_NO_SUCH_USER_IS_AWATING,
+					ReplyMarkup: nil,
+				},
+			},
+		}
+
+		update := types.TelegramUpdate{
+			Message: types.Message{
+				Text: "/connect 100500",
+				From: FROM,
+			},
+		}
+
+		got, err := createReply(update, store)
+		assertNonErrorReply(t, got, want, err)
 	})
 	t.Run("state - WAITING for connection - should tell about waiting for connection", func(t *testing.T) {
 		store := NewInMemoryStore()
@@ -178,4 +213,15 @@ func TestGetConnectionId(t *testing.T) {
 			t.Errorf("wrong user id, wanted %d, got %d", USER_ID, id)
 		}
 	})
+}
+
+func assertNonErrorReply(t testing.TB, got, want []types.ReplyDTO, err error) {
+	t.Helper()
+	if err != nil {
+		t.Errorf("shouldn't have error")
+	}
+
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("expected %v, got %v", want, got)
+	}
 }
