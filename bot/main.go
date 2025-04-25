@@ -73,6 +73,48 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 	case types.STATE_INITIAL:
 		incomingConnectionId, isConnectionMessage := getConnectionId(&update)
 
+		if isStartMessage(&update) {
+			// Start message
+			// TODO: check if not connection exists
+			newConnectionId := store.CreateConnectionId(&userData.ID)
+			return []types.ReplyDTO{
+				{
+					Message: types.ReplyMessage{
+						UserID:      userData.ID,
+						Message:     createConnectionMessage(userData.USERNAME, newConnectionId),
+						ReplyMarkup: nil,
+					},
+					NextState: &types.DialogState{
+						State:        types.WAITING_FOR_CONNECT,
+						ConnectionId: &newConnectionId,
+					},
+				},
+				{
+					Message: types.ReplyMessage{
+						UserID:      userData.ID,
+						Message:     MESSAGE_FORWARD_CONNECTION_02,
+						ReplyMarkup: nil,
+					},
+				},
+			}, nil
+		} else if isResetMessage(&update) {
+			// Reset message
+			// TODO: handle reset
+		} else if isConnectionMessage {
+			// TODO: handle connection
+		} else {
+			// Irrelevant - show guide
+			return []types.ReplyDTO{
+				{
+					Message: types.ReplyMessage{
+						UserID:      userData.ID,
+						Message:     MESSAGE_START_GUIDE,
+						ReplyMarkup: nil,
+					},
+				},
+			}, nil
+		}
+
 		if isConnectionMessage {
 			connectionTarget := store.GetConnectionTarget(&incomingConnectionId)
 			if connectionTarget == nil {
@@ -99,28 +141,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 			// TODO: handle connection here
 			return []types.ReplyDTO{}, nil
 		}
-		// TODO: check if not connection exists
-		newConnectionId := store.CreateConnectionId(&userData.ID)
-		return []types.ReplyDTO{
-			{
-				Message: types.ReplyMessage{
-					UserID:      userData.ID,
-					Message:     createConnectionMessage(userData.USERNAME, newConnectionId),
-					ReplyMarkup: nil,
-				},
-				NextState: &types.DialogState{
-					State:        types.WAITING_FOR_CONNECT,
-					ConnectionId: &newConnectionId,
-				},
-			},
-			{
-				Message: types.ReplyMessage{
-					UserID:      userData.ID,
-					Message:     MESSAGE_FORWARD_CONNECTION_02,
-					ReplyMarkup: nil,
-				},
-			},
-		}, nil
+		return nil, nil
 	case types.WAITING_FOR_CONNECT:
 		return []types.ReplyDTO{
 			{

@@ -15,30 +15,30 @@ func TestCreateReply(t *testing.T) {
 	}
 	var CONNECTION_ID int64 = 100500
 
-	// t.Run("INITIAL state, irrelevant message", func(t *testing.T) {
-	// 	store := NewInMemoryStore()
-	//
-	// 	want := []types.ReplyDTO{
-	// 		{
-	// 			Message: types.ReplyMessage{
-	// 				UserID:      FROM.ID,
-	// 				Message:     MESSAGE_START_GUIDE,
-	// 				ReplyMarkup: nil,
-	// 			},
-	// 		},
-	// 	}
-	//
-	// 	update := types.TelegramUpdate{
-	// 		Message: types.Message{
-	// 			From: FROM,
-	// 		},
-	// 	}
-	//
-	// 	got, err := createReply(update, store)
-	// 	assertNonErrorReply(t, got, want, err)
-	// })
+	t.Run("INITIAL state, irrelevant message - should show guide", func(t *testing.T) {
+		store := NewInMemoryStore()
 
-	t.Run("state - INITIAL and it is not a 'connect' message - should ask user to forward connection message", func(t *testing.T) {
+		want := []types.ReplyDTO{
+			{
+				Message: types.ReplyMessage{
+					UserID:      FROM.ID,
+					Message:     MESSAGE_START_GUIDE,
+					ReplyMarkup: nil,
+				},
+			},
+		}
+
+		update := types.TelegramUpdate{
+			Message: types.Message{
+				From: FROM,
+			},
+		}
+
+		got, err := createReply(update, store)
+		assertNonErrorReply(t, got, want, err)
+	})
+
+	t.Run("INITIAL state, /start message - create connection to forward", func(t *testing.T) {
 		store := NewInMemoryStore()
 		store.states[USER_ID] = types.DialogState{
 			State:        types.STATE_INITIAL,
@@ -69,12 +69,14 @@ func TestCreateReply(t *testing.T) {
 		update := types.TelegramUpdate{
 			Message: types.Message{
 				From: FROM,
+				Text: " /start ",
 			},
 		}
 
 		got, err := createReply(update, store)
 		assertNonErrorReply(t, got, want, err)
 	})
+
 	// t.Run("state - INITIAL and is a 'connect' message to yourself - should show an error", func(t *testing.T) {
 	// 	store := NewInMemoryStore()
 	// 	want := []types.ReplyDTO{
