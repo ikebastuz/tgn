@@ -101,7 +101,31 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 			// Reset message
 			// TODO: handle reset
 		} else if isConnectionMessage {
+			// Connect message
 			// TODO: handle connection
+			connectionTarget := store.GetConnectionTarget(&incomingConnectionId)
+			if connectionTarget == nil {
+				return []types.ReplyDTO{
+					{
+						Message: types.ReplyMessage{
+							UserID:      userData.ID,
+							Message:     MESSAGE_NO_SUCH_USER_IS_AWATING,
+							ReplyMarkup: nil,
+						},
+					},
+				}, nil
+			} else if *connectionTarget == userData.ID {
+				return []types.ReplyDTO{
+					{
+						Message: types.ReplyMessage{
+							UserID:      userData.ID,
+							Message:     MESSAGE_YOU_CANT_CONNECT_TO_YOURSELF,
+							ReplyMarkup: nil,
+						},
+					},
+				}, nil
+			}
+			// TODO: handle correct connection
 		} else {
 			// Irrelevant - show guide
 			return []types.ReplyDTO{
@@ -115,32 +139,6 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 			}, nil
 		}
 
-		if isConnectionMessage {
-			connectionTarget := store.GetConnectionTarget(&incomingConnectionId)
-			if connectionTarget == nil {
-				return []types.ReplyDTO{
-					{
-						Message: types.ReplyMessage{
-							UserID:      userData.ID,
-							Message:     MESSAGE_NO_SUCH_USER_IS_AWATING,
-							ReplyMarkup: nil,
-						},
-					},
-				}, nil
-			} else if connectionTarget == &userData.ID {
-				return []types.ReplyDTO{
-					{
-						Message: types.ReplyMessage{
-							UserID:      userData.ID,
-							Message:     MESSAGE_YOU_CANT_CONNECT_TO_YOURSELF,
-							ReplyMarkup: nil,
-						},
-					},
-				}, nil
-			}
-			// TODO: handle connection here
-			return []types.ReplyDTO{}, nil
-		}
 		return nil, nil
 	case types.WAITING_FOR_CONNECT:
 		return []types.ReplyDTO{
