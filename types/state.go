@@ -5,6 +5,10 @@ type State int
 const (
 	STATE_INITIAL = iota
 	WAITING_FOR_CONNECT
+	SELECT_YOUR_ROLE
+	SELECT_LOWER_BOUNDS
+	SELECT_UPPER_BOUNDS
+	RESULT
 )
 
 type DialogState struct {

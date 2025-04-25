@@ -10,9 +10,14 @@ import (
 
 func TestCreateReply(t *testing.T) {
 	var USER_ID int64 = 123
+	var USER_ID_2 int64 = 124
 	var FROM = types.From{
 		ID:       int64(USER_ID),
 		USERNAME: "hello",
+	}
+	var FROM_2 = types.From{
+		ID:       int64(USER_ID_2),
+		USERNAME: "hello 2",
 	}
 	var CONNECTION_ID int64 = 100500
 
@@ -119,6 +124,50 @@ func TestCreateReply(t *testing.T) {
 			Message: types.Message{
 				Text: "/connect 1337",
 				From: FROM,
+			},
+		}
+
+		got, err := createReply(update, store)
+		assertNonErrorReply(t, got, want, err)
+	})
+
+	t.Run("INITIAL state, /connect message to existing user - should connect correctly", func(t *testing.T) {
+		store := NewInMemoryStore()
+		store.states[USER_ID] = types.DialogState{
+			State:        types.STATE_INITIAL,
+			ConnectionId: &CONNECTION_ID,
+		}
+		store.connections[CONNECTION_ID] = USER_ID
+
+		want := []types.ReplyDTO{
+			{
+				Message: types.ReplyMessage{
+					UserID:      FROM_2.ID,
+					Message:     "connected",
+					ReplyMarkup: nil,
+				},
+				NextState: &types.DialogState{
+					State:      types.SELECT_YOUR_ROLE,
+					OpponentId: &FROM.ID,
+				},
+			},
+			{
+				Message: types.ReplyMessage{
+					UserID:      FROM.ID,
+					Message:     "connected",
+					ReplyMarkup: nil,
+				},
+				NextState: &types.DialogState{
+					State:      types.SELECT_YOUR_ROLE,
+					OpponentId: &FROM_2.ID,
+				},
+			},
+		}
+
+		update := types.TelegramUpdate{
+			Message: types.Message{
+				Text: fmt.Sprintf("/connect %d", CONNECTION_ID),
+				From: FROM_2,
 			},
 		}
 

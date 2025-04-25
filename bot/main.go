@@ -124,6 +124,31 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 						},
 					},
 				}, nil
+			} else {
+				return []types.ReplyDTO{
+					{
+						Message: types.ReplyMessage{
+							UserID:      userData.ID,
+							Message:     "connected",
+							ReplyMarkup: nil,
+						},
+						NextState: &types.DialogState{
+							State:      types.SELECT_YOUR_ROLE,
+							OpponentId: connectionTarget,
+						},
+					},
+					{
+						Message: types.ReplyMessage{
+							UserID:      *connectionTarget,
+							Message:     "connected",
+							ReplyMarkup: nil,
+						},
+						NextState: &types.DialogState{
+							State:      types.SELECT_YOUR_ROLE,
+							OpponentId: &userData.ID,
+						},
+					},
+				}, nil
 			}
 			// TODO: handle correct connection
 		} else {
