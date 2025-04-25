@@ -9,9 +9,11 @@ import (
 )
 
 const CONNECTION_PATTERN = `^\s*/connect\s+(\d+)\s*$`
+const START_PATTERN = `(?s).*/start.*`
+const RESET_PATTERN = `(?s).*/reset.*`
 
-func createConnectionMessage(userData types.From) string {
-	return fmt.Sprintf(MESSAGE_FORWARD_CONNECTION_01, userData.USERNAME, userData.ID)
+func createConnectionMessage(userName string, connectionId int64) string {
+	return fmt.Sprintf(MESSAGE_FORWARD_CONNECTION_01, userName, connectionId)
 }
 
 func getUserData(update types.TelegramUpdate) (*types.From, error) {
@@ -26,7 +28,7 @@ func getUserData(update types.TelegramUpdate) (*types.From, error) {
 }
 
 func getDialogState(userId int64, store types.Store) (*types.DialogState, error) {
-	dialogState := store.GetDialogState(userId)
+	dialogState := store.GetDialogState(&userId)
 	return dialogState, nil
 }
 
@@ -47,4 +49,20 @@ func getConnectionId(update *types.TelegramUpdate) (int64, bool) {
 	}
 
 	return 0, false
+}
+
+func isStartMessage(update *types.TelegramUpdate) bool {
+	text := strings.TrimSpace(update.Message.Text)
+
+	re := regexp.MustCompile(START_PATTERN)
+
+	return re.MatchString(text)
+}
+
+func isResetMessage(update *types.TelegramUpdate) bool {
+	text := strings.TrimSpace(update.Message.Text)
+
+	re := regexp.MustCompile(RESET_PATTERN)
+
+	return re.MatchString(text)
 }

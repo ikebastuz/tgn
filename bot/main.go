@@ -51,7 +51,7 @@ func HandleMessage(ctx context.Context, client *telegram.Client, update types.Te
 		}
 
 		if nextState != nil {
-			store.SetDialogState(userData.ID, nextState)
+			store.SetDialogState(&userData.ID, nextState)
 		}
 	}
 
@@ -71,10 +71,21 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 
 	switch dialogState.State {
 	case types.STATE_INITIAL:
-		connectionId, isConnectionMessage := getConnectionId(&update)
+		incomingConnectionId, isConnectionMessage := getConnectionId(&update)
 
 		if isConnectionMessage {
-			if connectionId == userData.ID {
+			connectionTarget := store.GetConnectionTarget(&incomingConnectionId)
+			if connectionTarget == nil {
+				return []types.ReplyDTO{
+					{
+						Message: types.ReplyMessage{
+							UserID:      userData.ID,
+							Message:     MESSAGE_NO_SUCH_USER_IS_AWATING,
+							ReplyMarkup: nil,
+						},
+					},
+				}, nil
+			} else if connectionTarget == &userData.ID {
 				return []types.ReplyDTO{
 					{
 						Message: types.ReplyMessage{
@@ -85,29 +96,21 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 					},
 				}, nil
 			}
-			if store.GetDialogState(connectionId).State != types.WAITING_FOR_CONNECT {
-				return []types.ReplyDTO{
-					{
-						Message: types.ReplyMessage{
-							UserID:      userData.ID,
-							Message:     MESSAGE_NO_SUCH_USER_IS_AWATING,
-							ReplyMarkup: nil,
-						},
-					},
-				}, nil
-			}
 			// TODO: handle connection here
 			return []types.ReplyDTO{}, nil
 		}
+		// TODO: check if not connection exists
+		newConnectionId := store.CreateConnectionId(&userData.ID)
 		return []types.ReplyDTO{
 			{
 				Message: types.ReplyMessage{
 					UserID:      userData.ID,
-					Message:     createConnectionMessage(*userData),
+					Message:     createConnectionMessage(userData.USERNAME, newConnectionId),
 					ReplyMarkup: nil,
 				},
 				NextState: &types.DialogState{
-					State: types.WAITING_FOR_CONNECT,
+					State:        types.WAITING_FOR_CONNECT,
+					ConnectionId: &newConnectionId,
 				},
 			},
 			{
