@@ -144,7 +144,7 @@ func TestCreateReply(t *testing.T) {
 				Message: types.ReplyMessage{
 					UserID:      FROM_2.ID,
 					Message:     MESSAGE_SELECT_YOUR_ROLE,
-					ReplyMarkup: nil,
+					ReplyMarkup: KEYBOARD_SELECT_YOUR_ROLE,
 				},
 				NextState: &types.DialogState{
 					State:      types.SELECT_YOUR_ROLE,
@@ -155,7 +155,7 @@ func TestCreateReply(t *testing.T) {
 				Message: types.ReplyMessage{
 					UserID:      FROM.ID,
 					Message:     MESSAGE_SELECT_YOUR_ROLE,
-					ReplyMarkup: nil,
+					ReplyMarkup: KEYBOARD_SELECT_YOUR_ROLE,
 				},
 				NextState: &types.DialogState{
 					State:      types.SELECT_YOUR_ROLE,
