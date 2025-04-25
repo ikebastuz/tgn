@@ -125,6 +125,8 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 					},
 				}, nil
 			} else {
+				// TODO: update store
+				store.DeleteConnectionId(&incomingConnectionId)
 				return []types.ReplyDTO{
 					{
 						Message: types.ReplyMessage{
@@ -150,7 +152,6 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 					},
 				}, nil
 			}
-			// TODO: handle correct connection
 		} else {
 			// Irrelevant - show guide
 			return []types.ReplyDTO{

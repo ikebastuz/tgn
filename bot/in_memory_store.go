@@ -1,8 +1,10 @@
 package bot
 
 import (
-	"github.com/ikebastuz/tgn/types"
+	"errors"
 	"math/rand"
+
+	"github.com/ikebastuz/tgn/types"
 )
 
 type InMemoryStore struct {
@@ -54,4 +56,12 @@ func (s *InMemoryStore) GetConnectionTarget(connectionId *int64) *int64 {
 		return &connection
 	}
 	return nil
+}
+
+func (s *InMemoryStore) DeleteConnectionId(connectionId *int64) error {
+	if _, exists := s.connections[*connectionId]; exists {
+		delete(s.connections, *connectionId)
+		return nil
+	}
+	return errors.New("no such connection")
 }
