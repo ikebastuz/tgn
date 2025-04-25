@@ -143,7 +143,7 @@ func TestCreateReply(t *testing.T) {
 			{
 				Message: types.ReplyMessage{
 					UserID:      FROM_2.ID,
-					Message:     "connected",
+					Message:     MESSAGE_SELECT_YOUR_ROLE,
 					ReplyMarkup: nil,
 				},
 				NextState: &types.DialogState{
@@ -154,7 +154,7 @@ func TestCreateReply(t *testing.T) {
 			{
 				Message: types.ReplyMessage{
 					UserID:      FROM.ID,
-					Message:     "connected",
+					Message:     MESSAGE_SELECT_YOUR_ROLE,
 					ReplyMarkup: nil,
 				},
 				NextState: &types.DialogState{

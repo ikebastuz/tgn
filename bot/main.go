@@ -129,7 +129,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 					{
 						Message: types.ReplyMessage{
 							UserID:      userData.ID,
-							Message:     "connected",
+							Message:     MESSAGE_SELECT_YOUR_ROLE,
 							ReplyMarkup: nil,
 						},
 						NextState: &types.DialogState{
@@ -140,7 +140,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 					{
 						Message: types.ReplyMessage{
 							UserID:      *connectionTarget,
-							Message:     "connected",
+							Message:     MESSAGE_SELECT_YOUR_ROLE,
 							ReplyMarkup: nil,
 						},
 						NextState: &types.DialogState{
