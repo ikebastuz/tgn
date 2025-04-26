@@ -12,6 +12,10 @@ type InMemoryStore struct {
 	connections map[int64]int64
 }
 
+var DEFAULT_DIALOG_STATE = types.DialogState{
+	State: types.STATE_INITIAL,
+}
+
 func NewInMemoryStore() *InMemoryStore {
 	return &InMemoryStore{
 		states:      make(map[int64]types.DialogState),
@@ -23,9 +27,9 @@ func (s *InMemoryStore) GetDialogState(userId *int64) *types.DialogState {
 	if state, exists := s.states[*userId]; exists {
 		return &state
 	}
-	return &types.DialogState{
-		State: types.STATE_INITIAL,
-	}
+	s.states[*userId] = DEFAULT_DIALOG_STATE
+
+	return &DEFAULT_DIALOG_STATE
 }
 
 func (s *InMemoryStore) SetDialogState(userId *int64, state *types.DialogState) {
@@ -64,4 +68,15 @@ func (s *InMemoryStore) DeleteConnectionId(connectionId *int64) error {
 		return nil
 	}
 	return errors.New("no such connection")
+}
+
+func (s *InMemoryStore) ResetUserState(userId *int64) error {
+	s.states[*userId] = DEFAULT_DIALOG_STATE
+
+	for connectionId, targetUserId := range s.connections {
+		if targetUserId == *userId {
+			delete(s.connections, connectionId)
+		}
+	}
+	return nil
 }

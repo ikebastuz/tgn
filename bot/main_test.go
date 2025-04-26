@@ -243,9 +243,6 @@ func TestCreateReply(t *testing.T) {
 						ReplyMarkup: nil,
 					},
 				},
-				NextState: &types.DialogState{
-					State: types.STATE_INITIAL,
-				},
 			},
 		}
 

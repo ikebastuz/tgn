@@ -64,6 +64,8 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 	}
 
 	if isResetMessage(&update) {
+		store.ResetUserState(&userData.ID)
+
 		return []types.ReplyDTO{
 			{
 				UserId: userData.ID,
@@ -72,9 +74,6 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 						Message:     MESSAGE_START_GUIDE,
 						ReplyMarkup: nil,
 					},
-				},
-				NextState: &types.DialogState{
-					State: types.STATE_INITIAL,
 				},
 			},
 		}, nil
