@@ -16,4 +16,5 @@ const (
 	MESSAGE_NO_SUCH_USER_IS_AWATING      = "No such user is awaiting for connection"
 	MESSAGE_START_GUIDE                  = "To use this bot use:\n/start - to initiate negotitaion\n/connect <ID> - to connect to person\n/reset - to reset"
 	MESSAGE_SELECT_YOUR_ROLE             = "You are connected!\nSelect your role"
+	MESSAGE_UNEXPECTED_STATE             = "Wow, I'm not sure how we ended up being here\nTry to reset with\n/reset"
 )

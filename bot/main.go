@@ -201,6 +201,16 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 
 	default:
 		// TODO: handle unexpected state
-		return nil, nil
+		return []types.ReplyDTO{
+			{
+				UserId: userData.ID,
+				Messages: []types.ReplyMessage{
+					{
+						Message:     MESSAGE_UNEXPECTED_STATE,
+						ReplyMarkup: nil,
+					},
+				},
+			},
+		}, nil
 	}
 }
