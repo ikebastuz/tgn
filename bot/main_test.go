@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/ikebastuz/tgn/actions"
 	"github.com/ikebastuz/tgn/types"
 )
 
@@ -227,6 +228,60 @@ func TestCreateReply(t *testing.T) {
 		}
 	})
 
+	t.Run("SELECT ROLE state - update both users and ask for lower bounds", func(t *testing.T) {
+		store := NewInMemoryStore()
+		store.SetDialogState(&USER_ID, &types.DialogState{State: types.SELECT_YOUR_ROLE, OpponentId: &USER_ID_2})
+		store.SetDialogState(&USER_ID_2, &types.DialogState{State: types.SELECT_YOUR_ROLE, OpponentId: &USER_ID})
+		want := []types.ReplyDTO{
+			{
+				UserId: FROM.ID,
+				Messages: []types.ReplyMessage{
+					{
+						Message:     MESSAGE_SELECT_SALARY_LOWER_BOUND,
+						ReplyMarkup: nil,
+					},
+				},
+				NextState: &types.DialogState{
+					State: types.SELECT_LOWER_BOUNDS,
+				},
+			},
+			{
+				UserId: FROM_2.ID,
+				Messages: []types.ReplyMessage{
+					{
+						Message:     MESSAGE_SELECT_SALARY_LOWER_BOUND,
+						ReplyMarkup: nil,
+					},
+				},
+				NextState: &types.DialogState{
+					State: types.SELECT_LOWER_BOUNDS,
+				},
+			},
+		}
+
+		update := types.TelegramUpdate{
+			UpdateID: 1,
+			CallbackQuery: types.CallbackQuery{
+				Data: actions.ACTION_SELECT_EMPLOYEE,
+			},
+			Message: types.Message{
+				MessageID: 1,
+				Text:      "",
+				From:      FROM,
+			},
+		}
+
+		got, err := createReply(update, store)
+		if err != nil {
+			t.Errorf("shouldn't have error")
+		}
+
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("expected %v, got %v", want, got)
+		}
+	})
+
+	// TODO: cover case when opponentId != null
 	t.Run("ANY state with /reset - should set to initial state", func(t *testing.T) {
 		store := NewInMemoryStore()
 		store.SetDialogState(&USER_ID, &types.DialogState{State: types.WAITING_FOR_CONNECT})

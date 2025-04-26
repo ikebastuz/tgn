@@ -64,9 +64,11 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 	}
 
 	if isResetMessage(&update) {
+		// TODO: handle case when already connected to another user
+		// need to reset that user as well
 		store.ResetUserState(&userData.ID)
 
-		return []types.ReplyDTO{
+		response := []types.ReplyDTO{
 			{
 				UserId: userData.ID,
 				Messages: []types.ReplyMessage{
@@ -76,7 +78,23 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 					},
 				},
 			},
-		}, nil
+		}
+		opponentId := dialogState.OpponentId
+		if opponentId != nil {
+
+			store.ResetUserState(opponentId)
+			response = append(response, types.ReplyDTO{
+				UserId: *opponentId,
+				Messages: []types.ReplyMessage{
+					{
+						Message:     MESSAGE_START_GUIDE,
+						ReplyMarkup: nil,
+					},
+				},
+			})
+		}
+
+		return response, nil
 	}
 
 	switch dialogState.State {
@@ -199,8 +217,37 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 			},
 		}, nil
 
+	case types.SELECT_YOUR_ROLE:
+		opponentId := dialogState.OpponentId
+
+		return []types.ReplyDTO{
+			{
+				UserId: userData.ID,
+				Messages: []types.ReplyMessage{
+					{
+						Message:     MESSAGE_SELECT_SALARY_LOWER_BOUND,
+						ReplyMarkup: nil,
+					},
+				},
+				NextState: &types.DialogState{
+					State: types.SELECT_LOWER_BOUNDS,
+				},
+			},
+			{
+				UserId: *opponentId,
+				Messages: []types.ReplyMessage{
+					{
+						Message:     MESSAGE_SELECT_SALARY_LOWER_BOUND,
+						ReplyMarkup: nil,
+					},
+				},
+				NextState: &types.DialogState{
+					State: types.SELECT_LOWER_BOUNDS,
+				},
+			},
+		}, nil
+
 	default:
-		// TODO: handle unexpected state
 		return []types.ReplyDTO{
 			{
 				UserId: userData.ID,
