@@ -63,6 +63,23 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 		return nil, err
 	}
 
+	if isResetMessage(&update) {
+		return []types.ReplyDTO{
+			{
+				UserId: userData.ID,
+				Messages: []types.ReplyMessage{
+					{
+						Message:     MESSAGE_START_GUIDE,
+						ReplyMarkup: nil,
+					},
+				},
+				NextState: &types.DialogState{
+					State: types.STATE_INITIAL,
+				},
+			},
+		}, nil
+	}
+
 	switch dialogState.State {
 	case types.STATE_INITIAL:
 		incomingConnectionId, isConnectionMessage := getConnectionId(&update)
@@ -95,9 +112,6 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 					},
 				},
 			}, nil
-		} else if isResetMessage(&update) {
-			// Reset message
-			// TODO: handle reset
 		} else if isConnectionMessage {
 			// Connect message
 			// TODO: handle connection
@@ -173,7 +187,6 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 			}, nil
 		}
 
-		return nil, nil
 	case types.WAITING_FOR_CONNECT:
 		return []types.ReplyDTO{
 			{

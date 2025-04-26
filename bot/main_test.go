@@ -226,6 +226,47 @@ func TestCreateReply(t *testing.T) {
 			t.Errorf("expected %v, got %v", want, got)
 		}
 	})
+
+	t.Run("ANY state with /reset - should set to initial state", func(t *testing.T) {
+		store := NewInMemoryStore()
+		store.SetDialogState(&USER_ID, &types.DialogState{State: types.WAITING_FOR_CONNECT})
+		var FROM = types.From{
+			ID:       int64(USER_ID),
+			USERNAME: "hello",
+		}
+		want := []types.ReplyDTO{
+			{
+				UserId: FROM.ID,
+				Messages: []types.ReplyMessage{
+					{
+						Message:     MESSAGE_START_GUIDE,
+						ReplyMarkup: nil,
+					},
+				},
+				NextState: &types.DialogState{
+					State: types.STATE_INITIAL,
+				},
+			},
+		}
+
+		update := types.TelegramUpdate{
+			UpdateID: 1,
+			Message: types.Message{
+				MessageID: 1,
+				Text:      " /reset ",
+				From:      FROM,
+			},
+		}
+
+		got, err := createReply(update, store)
+		if err != nil {
+			t.Errorf("shouldn't have error")
+		}
+
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("expected %v, got %v", want, got)
+		}
+	})
 }
 
 func assertNonErrorReply(t testing.TB, got, want []types.ReplyDTO, err error) {
