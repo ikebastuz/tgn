@@ -9,7 +9,7 @@ var (
 )
 
 const (
-	MESSAGE_FORWARD_CONNECTION_01        = "To join %s and\nstart negotiating - send\n\n/connect %v"
+	MESSAGE_FORWARD_CONNECTION_01        = "%s invites you to negotiate\nTo join - send the following message to @NegotiMateBot\n\n/connect %v"
 	MESSAGE_FORWARD_CONNECTION_02        = "Forward this ☝️ message to person\nyou want to negotiate with"
 	MESSAGE_WAITING_FOR_CONNECTION       = "Waiting for connection"
 	MESSAGE_YOU_CANT_CONNECT_TO_YOURSELF = "You can't connect to yourself"

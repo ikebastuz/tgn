@@ -16,42 +16,36 @@ func HandleMessage(ctx context.Context, client *telegram.Client, update types.Te
 		return err
 	}
 
-	userData, err := getUserData(update)
-	if err != nil {
-		return err
-	}
-
 	for _, reply := range replies {
-		message := reply.Message
-		nextState := reply.NextState
+		for _, message := range reply.Messages {
+			if message.MessageID > 0 {
+				_, err = client.API().MessagesEditMessage(ctx, &tg.MessagesEditMessageRequest{
+					ID:          message.MessageID,
+					Peer:        &tg.InputPeerUser{UserID: reply.UserId},
+					Message:     message.Message,
+					ReplyMarkup: message.ReplyMarkup,
+				})
 
-		if message.MessageID > 0 {
-			_, err = client.API().MessagesEditMessage(ctx, &tg.MessagesEditMessageRequest{
-				ID:          message.MessageID,
-				Peer:        &tg.InputPeerUser{UserID: message.UserID},
-				Message:     message.Message,
-				ReplyMarkup: message.ReplyMarkup,
-			})
-
-			if err != nil {
-				log.Printf("ERROR: Failed to edit message: %v", err)
-				return err
-			}
-		} else {
-			_, err = client.API().MessagesSendMessage(ctx, &tg.MessagesSendMessageRequest{
-				RandomID:    rand.Int63(),
-				Peer:        &tg.InputPeerUser{UserID: message.UserID},
-				Message:     message.Message,
-				ReplyMarkup: message.ReplyMarkup,
-			})
-			if err != nil {
-				log.Printf("ERROR: Failed to send message: %v", err)
-				return err
+				if err != nil {
+					log.Printf("ERROR: Failed to edit message: %v", err)
+					return err
+				}
+			} else {
+				_, err = client.API().MessagesSendMessage(ctx, &tg.MessagesSendMessageRequest{
+					RandomID:    rand.Int63(),
+					Peer:        &tg.InputPeerUser{UserID: reply.UserId},
+					Message:     message.Message,
+					ReplyMarkup: message.ReplyMarkup,
+				})
+				if err != nil {
+					log.Printf("ERROR: Failed to send message: %v", err)
+					return err
+				}
 			}
 		}
 
-		if nextState != nil {
-			store.SetDialogState(&userData.ID, nextState)
+		if reply.NextState != nil {
+			store.SetDialogState(&reply.UserId, reply.NextState)
 		}
 	}
 
@@ -79,10 +73,12 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 			newConnectionId := store.CreateConnectionId(&userData.ID)
 			return []types.ReplyDTO{
 				{
-					Message: types.ReplyMessage{
-						UserID:      userData.ID,
-						Message:     createConnectionMessage(userData.USERNAME, newConnectionId),
-						ReplyMarkup: nil,
+					UserId: userData.ID,
+					Messages: []types.ReplyMessage{
+						{
+							Message:     createConnectionMessage(userData.USERNAME, newConnectionId),
+							ReplyMarkup: nil,
+						},
 					},
 					NextState: &types.DialogState{
 						State:        types.WAITING_FOR_CONNECT,
@@ -90,10 +86,12 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 					},
 				},
 				{
-					Message: types.ReplyMessage{
-						UserID:      userData.ID,
-						Message:     MESSAGE_FORWARD_CONNECTION_02,
-						ReplyMarkup: nil,
+					UserId: userData.ID,
+					Messages: []types.ReplyMessage{
+						{
+							Message:     MESSAGE_FORWARD_CONNECTION_02,
+							ReplyMarkup: nil,
+						},
 					},
 				},
 			}, nil
@@ -103,24 +101,28 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 		} else if isConnectionMessage {
 			// Connect message
 			// TODO: handle connection
-			connectionTarget := store.GetConnectionTarget(&incomingConnectionId)
-			if connectionTarget == nil {
+			targetUserId := store.GetConnectionTarget(&incomingConnectionId)
+			if targetUserId == nil {
 				return []types.ReplyDTO{
 					{
-						Message: types.ReplyMessage{
-							UserID:      userData.ID,
-							Message:     MESSAGE_NO_SUCH_USER_IS_AWATING,
-							ReplyMarkup: nil,
+						UserId: userData.ID,
+						Messages: []types.ReplyMessage{
+							{
+								Message:     MESSAGE_NO_SUCH_USER_IS_AWATING,
+								ReplyMarkup: nil,
+							},
 						},
 					},
 				}, nil
-			} else if *connectionTarget == userData.ID {
+			} else if *targetUserId == userData.ID {
 				return []types.ReplyDTO{
 					{
-						Message: types.ReplyMessage{
-							UserID:      userData.ID,
-							Message:     MESSAGE_YOU_CANT_CONNECT_TO_YOURSELF,
-							ReplyMarkup: nil,
+						UserId: userData.ID,
+						Messages: []types.ReplyMessage{
+							{
+								Message:     MESSAGE_YOU_CANT_CONNECT_TO_YOURSELF,
+								ReplyMarkup: nil,
+							},
 						},
 					},
 				}, nil
@@ -129,21 +131,25 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 				store.DeleteConnectionId(&incomingConnectionId)
 				return []types.ReplyDTO{
 					{
-						Message: types.ReplyMessage{
-							UserID:      userData.ID,
-							Message:     MESSAGE_SELECT_YOUR_ROLE,
-							ReplyMarkup: KEYBOARD_SELECT_YOUR_ROLE,
+						UserId: userData.ID,
+						Messages: []types.ReplyMessage{
+							{
+								Message:     MESSAGE_SELECT_YOUR_ROLE,
+								ReplyMarkup: KEYBOARD_SELECT_YOUR_ROLE,
+							},
 						},
 						NextState: &types.DialogState{
 							State:      types.SELECT_YOUR_ROLE,
-							OpponentId: connectionTarget,
+							OpponentId: targetUserId,
 						},
 					},
 					{
-						Message: types.ReplyMessage{
-							UserID:      *connectionTarget,
-							Message:     MESSAGE_SELECT_YOUR_ROLE,
-							ReplyMarkup: KEYBOARD_SELECT_YOUR_ROLE,
+						UserId: *targetUserId,
+						Messages: []types.ReplyMessage{
+							{
+								Message:     MESSAGE_SELECT_YOUR_ROLE,
+								ReplyMarkup: KEYBOARD_SELECT_YOUR_ROLE,
+							},
 						},
 						NextState: &types.DialogState{
 							State:      types.SELECT_YOUR_ROLE,
@@ -156,10 +162,12 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 			// Irrelevant - show guide
 			return []types.ReplyDTO{
 				{
-					Message: types.ReplyMessage{
-						UserID:      userData.ID,
-						Message:     MESSAGE_START_GUIDE,
-						ReplyMarkup: nil,
+					UserId: userData.ID,
+					Messages: []types.ReplyMessage{
+						{
+							Message:     MESSAGE_START_GUIDE,
+							ReplyMarkup: nil,
+						},
 					},
 				},
 			}, nil
@@ -169,15 +177,18 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 	case types.WAITING_FOR_CONNECT:
 		return []types.ReplyDTO{
 			{
-				Message: types.ReplyMessage{
-					UserID:      userData.ID,
-					Message:     MESSAGE_WAITING_FOR_CONNECTION,
-					ReplyMarkup: nil,
+				UserId: userData.ID,
+				Messages: []types.ReplyMessage{
+					{
+						Message:     MESSAGE_WAITING_FOR_CONNECTION,
+						ReplyMarkup: nil,
+					},
 				},
 			},
 		}, nil
 
 	default:
+		// TODO: handle unexpected state
 		return nil, nil
 	}
 }

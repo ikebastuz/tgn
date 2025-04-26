@@ -26,10 +26,12 @@ func TestCreateReply(t *testing.T) {
 
 		want := []types.ReplyDTO{
 			{
-				Message: types.ReplyMessage{
-					UserID:      FROM.ID,
-					Message:     MESSAGE_START_GUIDE,
-					ReplyMarkup: nil,
+				UserId: FROM.ID,
+				Messages: []types.ReplyMessage{
+					{
+						Message:     MESSAGE_START_GUIDE,
+						ReplyMarkup: nil,
+					},
 				},
 			},
 		}
@@ -53,10 +55,12 @@ func TestCreateReply(t *testing.T) {
 
 		want := []types.ReplyDTO{
 			{
-				Message: types.ReplyMessage{
-					UserID:      FROM.ID,
-					Message:     createConnectionMessage(FROM.USERNAME, CONNECTION_ID),
-					ReplyMarkup: nil,
+				UserId: FROM.ID,
+				Messages: []types.ReplyMessage{
+					{
+						Message:     createConnectionMessage(FROM.USERNAME, CONNECTION_ID),
+						ReplyMarkup: nil,
+					},
 				},
 				NextState: &types.DialogState{
 					State:        types.WAITING_FOR_CONNECT,
@@ -64,10 +68,12 @@ func TestCreateReply(t *testing.T) {
 				},
 			},
 			{
-				Message: types.ReplyMessage{
-					UserID:      FROM.ID,
-					Message:     MESSAGE_FORWARD_CONNECTION_02,
-					ReplyMarkup: nil,
+				UserId: FROM.ID,
+				Messages: []types.ReplyMessage{
+					{
+						Message:     MESSAGE_FORWARD_CONNECTION_02,
+						ReplyMarkup: nil,
+					},
 				},
 			},
 		}
@@ -89,10 +95,12 @@ func TestCreateReply(t *testing.T) {
 
 		want := []types.ReplyDTO{
 			{
-				Message: types.ReplyMessage{
-					UserID:      FROM.ID,
-					Message:     MESSAGE_YOU_CANT_CONNECT_TO_YOURSELF,
-					ReplyMarkup: nil,
+				UserId: FROM.ID,
+				Messages: []types.ReplyMessage{
+					{
+						Message:     MESSAGE_YOU_CANT_CONNECT_TO_YOURSELF,
+						ReplyMarkup: nil,
+					},
 				},
 			},
 		}
@@ -112,10 +120,12 @@ func TestCreateReply(t *testing.T) {
 		store := NewInMemoryStore()
 		want := []types.ReplyDTO{
 			{
-				Message: types.ReplyMessage{
-					UserID:      FROM.ID,
-					Message:     MESSAGE_NO_SUCH_USER_IS_AWATING,
-					ReplyMarkup: nil,
+				UserId: FROM.ID,
+				Messages: []types.ReplyMessage{
+					{
+						Message:     MESSAGE_NO_SUCH_USER_IS_AWATING,
+						ReplyMarkup: nil,
+					},
 				},
 			},
 		}
@@ -141,10 +151,12 @@ func TestCreateReply(t *testing.T) {
 
 		want := []types.ReplyDTO{
 			{
-				Message: types.ReplyMessage{
-					UserID:      FROM_2.ID,
-					Message:     MESSAGE_SELECT_YOUR_ROLE,
-					ReplyMarkup: KEYBOARD_SELECT_YOUR_ROLE,
+				UserId: FROM_2.ID,
+				Messages: []types.ReplyMessage{
+					{
+						Message:     MESSAGE_SELECT_YOUR_ROLE,
+						ReplyMarkup: KEYBOARD_SELECT_YOUR_ROLE,
+					},
 				},
 				NextState: &types.DialogState{
 					State:      types.SELECT_YOUR_ROLE,
@@ -152,10 +164,12 @@ func TestCreateReply(t *testing.T) {
 				},
 			},
 			{
-				Message: types.ReplyMessage{
-					UserID:      FROM.ID,
-					Message:     MESSAGE_SELECT_YOUR_ROLE,
-					ReplyMarkup: KEYBOARD_SELECT_YOUR_ROLE,
+				UserId: FROM.ID,
+				Messages: []types.ReplyMessage{
+					{
+						Message:     MESSAGE_SELECT_YOUR_ROLE,
+						ReplyMarkup: KEYBOARD_SELECT_YOUR_ROLE,
+					},
 				},
 				NextState: &types.DialogState{
 					State:      types.SELECT_YOUR_ROLE,
@@ -184,10 +198,12 @@ func TestCreateReply(t *testing.T) {
 		}
 		want := []types.ReplyDTO{
 			{
-				Message: types.ReplyMessage{
-					UserID:      FROM.ID,
-					Message:     MESSAGE_WAITING_FOR_CONNECTION,
-					ReplyMarkup: nil,
+				UserId: FROM.ID,
+				Messages: []types.ReplyMessage{
+					{
+						Message:     MESSAGE_WAITING_FOR_CONNECTION,
+						ReplyMarkup: nil,
+					},
 				},
 			},
 		}
