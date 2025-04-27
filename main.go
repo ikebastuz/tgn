@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -13,9 +12,16 @@ import (
 
 	"github.com/ikebastuz/tgn/bot"
 	"github.com/ikebastuz/tgn/router"
+	log "github.com/sirupsen/logrus"
 )
 
 func main() {
+	log.SetLevel(log.DebugLevel)
+	log.SetFormatter(&log.TextFormatter{
+		FullTimestamp: true,
+		ForceColors:   true,
+	})
+
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()
 
@@ -35,7 +41,7 @@ func main() {
 	})
 	store := bot.NewInMemoryStore()
 
-	log.Println("INFO: Starting bot with token:", config.TOKEN[:10]+"...")
+	log.Info("Starting bot with token:", config.TOKEN[:10]+"...")
 
 	// Add healthcheck handler
 	http.HandleFunc("/health", router.HandleHealthCheck)
@@ -46,35 +52,35 @@ func main() {
 
 	// Start HTTP server in a goroutine
 	go func() {
-		log.Printf("INFO: Starting HTTP server on port %s", config.PORT)
+		log.Infof("Starting HTTP server on port %s", config.PORT)
 		if err := http.ListenAndServe(":"+config.PORT, nil); err != nil {
-			log.Fatalf("ERROR: HTTP server failed: %v", err)
+			log.Fatalf("HTTP server failed: %v", err)
 		}
 	}()
 
 	// Run the client
 	if err := client.Run(ctx, func(ctx context.Context) error {
 		// Authenticate as a bot
-		log.Println("INFO: Authenticating bot...")
+		log.Info("Authenticating bot...")
 		if _, err := client.Auth().Bot(ctx, config.TOKEN); err != nil {
-			log.Printf("ERROR: Authentication failed: %v", err)
+			log.Errorf("Authentication failed: %v", err)
 			return err
 		}
 
 		// Get the current bot info
-		log.Println("INFO: Fetching bot self info...")
+		log.Info("Fetching bot self info...")
 		me, err := client.Self(ctx)
 		if err != nil {
-			log.Printf("ERROR: Failed to get bot info: %v", err)
+			log.Errorf("ERROR: Failed to get bot info: %v", err)
 			return err
 		}
 
-		log.Printf("INFO: Bot successfully logged in as @%s", me.Username)
+		log.Infof("Bot successfully logged in as @%s", me.Username)
 
 		// Start receiving updates
-		log.Println("INFO: Starting to receive updates...")
+		log.Info("Starting to receive updates...")
 		return telegram.RunUntilCanceled(ctx, client)
 	}); err != nil {
-		log.Fatalf("ERROR: Failed to run client: %v", err)
+		log.Fatalf("Failed to run client: %v", err)
 	}
 }

@@ -2,7 +2,7 @@ package main
 
 import (
 	"errors"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"os"
 	"strconv"
 )
@@ -29,7 +29,7 @@ func getConfig() (*Config, error) {
 		return nil, errors.New("BOT_APP_HASH environment variable is required")
 	}
 
-	log.Println("INFO: Initializing Telegram bot client...")
+	log.Info("Initializing Telegram bot client...")
 
 	botPort := os.Getenv("BOT_PORT")
 	if botPort == "" {

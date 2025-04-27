@@ -2,7 +2,7 @@ package bot
 
 import (
 	"context"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"math/rand"
 
 	"github.com/gotd/td/telegram"
@@ -27,7 +27,7 @@ func HandleMessage(ctx context.Context, client *telegram.Client, update types.Te
 				})
 
 				if err != nil {
-					log.Printf("ERROR: Failed to edit message: %v", err)
+					log.Errorf("Failed to edit message: %v", err)
 					return err
 				}
 			} else {
@@ -39,7 +39,7 @@ func HandleMessage(ctx context.Context, client *telegram.Client, update types.Te
 					ReplyMarkup: message.ReplyMarkup,
 				})
 				if err != nil {
-					log.Printf("ERROR: Failed to send message: %v", err)
+					log.Errorf("Failed to send message: %v", err)
 					return err
 				}
 			}
@@ -65,7 +65,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 	}
 
 	if isResetMessage(&update) {
-		log.Printf("INFO: Received RESET message from USER %v", userData.ID)
+		log.Infof("Received RESET message from USER %v", userData.ID)
 
 		// TODO: handle case when already connected to another user
 		// need to reset that user as well
@@ -84,7 +84,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 		}
 		opponentId := dialogState.OpponentId
 		if opponentId != nil {
-			log.Printf("INFO: Resetting opponent %d state aswell", &opponentId)
+			log.Infof("Resetting opponent %d state aswell", &opponentId)
 
 			store.ResetUserState(opponentId)
 			response = append(response, types.ReplyDTO{
@@ -101,14 +101,14 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 		return response, nil
 	}
 
-	log.Printf("INFO: User state is %s", dialogState.State)
+	log.Infof("User state is %s", dialogState.State)
 
 	switch dialogState.State {
 	case types.STATE_INITIAL:
 		incomingConnectionId, isConnectionMessage := getConnectionId(&update)
 
 		if isStartMessage(&update) {
-			log.Printf("INFO: Received START message")
+			log.Info("Received START message")
 
 			// Start message
 			// TODO: check if not connection exists
@@ -138,12 +138,12 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 				},
 			}, nil
 		} else if isConnectionMessage {
-			log.Printf("INFO: Received CONNECT message")
+			log.Info("Received CONNECT message")
 			// Connect message
 			// TODO: handle connection
 			targetUserId := store.GetConnectionTarget(&incomingConnectionId)
 			if targetUserId == nil {
-				log.Printf("WARN: Connection id %d does not exist", incomingConnectionId)
+				log.Warnf("Connection id %d does not exist", incomingConnectionId)
 				return []types.ReplyDTO{
 					{
 						UserId: userData.ID,
@@ -156,7 +156,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 					},
 				}, nil
 			} else if *targetUserId == userData.ID {
-				log.Printf("WARN: Trying to connect to yourself")
+				log.Warn("Trying to connect to yourself")
 				return []types.ReplyDTO{
 					{
 						UserId: userData.ID,
@@ -169,7 +169,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 					},
 				}, nil
 			} else {
-				log.Printf("INFO: Connecting USER %d to USER %d", userData.ID, *targetUserId)
+				log.Infof("Connecting USER %d to USER %d", userData.ID, *targetUserId)
 				// TODO: update store
 				store.DeleteConnectionId(&incomingConnectionId)
 				return []types.ReplyDTO{
@@ -202,7 +202,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 				}, nil
 			}
 		} else {
-			log.Printf("WARN: unknown command, showing guide")
+			log.Warn("unknown command, showing guide")
 			// Irrelevant - show guide
 			return []types.ReplyDTO{
 				{

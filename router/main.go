@@ -3,8 +3,8 @@ package router
 import (
 	"context"
 	"encoding/json"
+	log "github.com/sirupsen/logrus"
 	"io"
-	"log"
 	// "math/rand"
 	"net/http"
 	// "strconv"
@@ -30,7 +30,7 @@ func HandleWebhook(ctx context.Context, client *telegram.Client, store types.Sto
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		log.Printf("ERROR: Failed to read request body: %v", err)
+		log.Errorf("Failed to read request body: %v", err)
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
@@ -51,7 +51,7 @@ func HandleWebhook(ctx context.Context, client *telegram.Client, store types.Sto
 	// }
 	var update types.TelegramUpdate
 	if err := json.Unmarshal(body, &update); err != nil {
-		log.Printf("ERROR: Failed to parse update: %v", err)
+		log.Errorf("Failed to parse update: %v", err)
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
