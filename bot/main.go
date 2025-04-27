@@ -69,6 +69,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 
 		// TODO: handle case when already connected to another user
 		// need to reset that user as well
+		log.Infof("Resetting user %d state aswell", userData.ID)
 		store.ResetUserState(&userData.ID)
 
 		response := []types.ReplyDTO{
@@ -84,7 +85,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 		}
 		opponentId := dialogState.OpponentId
 		if opponentId != nil {
-			log.Infof("Resetting opponent %d state aswell", &opponentId)
+			log.Infof("Resetting opponent %d state aswell", *opponentId)
 
 			store.ResetUserState(opponentId)
 			response = append(response, types.ReplyDTO{
@@ -123,7 +124,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 						},
 					},
 					NextState: &types.DialogState{
-						State:        types.WAITING_FOR_CONNECT,
+						State:        types.STATE_WAITING_FOR_CONNECT,
 						ConnectionId: &newConnectionId,
 					},
 				},
@@ -182,7 +183,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 							},
 						},
 						NextState: &types.DialogState{
-							State:      types.SELECT_YOUR_ROLE,
+							State:      types.STATE_SELECT_YOUR_ROLE,
 							OpponentId: targetUserId,
 						},
 					},
@@ -195,7 +196,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 							},
 						},
 						NextState: &types.DialogState{
-							State:      types.SELECT_YOUR_ROLE,
+							State:      types.STATE_SELECT_YOUR_ROLE,
 							OpponentId: &userData.ID,
 						},
 					},
@@ -217,7 +218,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 			}, nil
 		}
 
-	case types.WAITING_FOR_CONNECT:
+	case types.STATE_WAITING_FOR_CONNECT:
 		return []types.ReplyDTO{
 			{
 				UserId: userData.ID,
@@ -230,7 +231,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 			},
 		}, nil
 
-	case types.SELECT_YOUR_ROLE:
+	case types.STATE_SELECT_YOUR_ROLE:
 		opponentId := dialogState.OpponentId
 
 		return []types.ReplyDTO{
@@ -243,7 +244,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 					},
 				},
 				NextState: &types.DialogState{
-					State: types.SELECT_LOWER_BOUNDS,
+					State: types.STATE_SELECT_LOWER_BOUNDS,
 				},
 			},
 			{
@@ -255,7 +256,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 					},
 				},
 				NextState: &types.DialogState{
-					State: types.SELECT_LOWER_BOUNDS,
+					State: types.STATE_SELECT_LOWER_BOUNDS,
 				},
 			},
 		}, nil

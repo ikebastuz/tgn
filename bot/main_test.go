@@ -64,7 +64,7 @@ func TestCreateReply(t *testing.T) {
 					},
 				},
 				NextState: &types.DialogState{
-					State:        types.WAITING_FOR_CONNECT,
+					State:        types.STATE_WAITING_FOR_CONNECT,
 					ConnectionId: &CONNECTION_ID,
 				},
 			},
@@ -160,7 +160,7 @@ func TestCreateReply(t *testing.T) {
 					},
 				},
 				NextState: &types.DialogState{
-					State:      types.SELECT_YOUR_ROLE,
+					State:      types.STATE_SELECT_YOUR_ROLE,
 					OpponentId: &FROM.ID,
 				},
 			},
@@ -173,7 +173,7 @@ func TestCreateReply(t *testing.T) {
 					},
 				},
 				NextState: &types.DialogState{
-					State:      types.SELECT_YOUR_ROLE,
+					State:      types.STATE_SELECT_YOUR_ROLE,
 					OpponentId: &FROM_2.ID,
 				},
 			},
@@ -192,7 +192,7 @@ func TestCreateReply(t *testing.T) {
 
 	t.Run("WAITING state, - tells about waiting for connection", func(t *testing.T) {
 		store := NewInMemoryStore()
-		store.SetDialogState(&USER_ID, &types.DialogState{State: types.WAITING_FOR_CONNECT})
+		store.SetDialogState(&USER_ID, &types.DialogState{State: types.STATE_WAITING_FOR_CONNECT})
 		var FROM = types.From{
 			ID:       int64(USER_ID),
 			USERNAME: "hello",
@@ -230,8 +230,8 @@ func TestCreateReply(t *testing.T) {
 
 	t.Run("SELECT ROLE state - update both users and ask for lower bounds", func(t *testing.T) {
 		store := NewInMemoryStore()
-		store.SetDialogState(&USER_ID, &types.DialogState{State: types.SELECT_YOUR_ROLE, OpponentId: &USER_ID_2})
-		store.SetDialogState(&USER_ID_2, &types.DialogState{State: types.SELECT_YOUR_ROLE, OpponentId: &USER_ID})
+		store.SetDialogState(&USER_ID, &types.DialogState{State: types.STATE_SELECT_YOUR_ROLE, OpponentId: &USER_ID_2})
+		store.SetDialogState(&USER_ID_2, &types.DialogState{State: types.STATE_SELECT_YOUR_ROLE, OpponentId: &USER_ID})
 		want := []types.ReplyDTO{
 			{
 				UserId: FROM.ID,
@@ -242,7 +242,7 @@ func TestCreateReply(t *testing.T) {
 					},
 				},
 				NextState: &types.DialogState{
-					State: types.SELECT_LOWER_BOUNDS,
+					State: types.STATE_SELECT_LOWER_BOUNDS,
 				},
 			},
 			{
@@ -254,7 +254,7 @@ func TestCreateReply(t *testing.T) {
 					},
 				},
 				NextState: &types.DialogState{
-					State: types.SELECT_LOWER_BOUNDS,
+					State: types.STATE_SELECT_LOWER_BOUNDS,
 				},
 			},
 		}
@@ -285,11 +285,11 @@ func TestCreateReply(t *testing.T) {
 	t.Run("ANY state with /reset - should set to initial state", func(t *testing.T) {
 		store := NewInMemoryStore()
 		store.SetDialogState(&USER_ID, &types.DialogState{
-			State:      types.SELECT_LOWER_BOUNDS,
+			State:      types.STATE_SELECT_LOWER_BOUNDS,
 			OpponentId: &USER_ID_2,
 		})
 		store.SetDialogState(&USER_ID_2, &types.DialogState{
-			State:      types.SELECT_LOWER_BOUNDS,
+			State:      types.STATE_SELECT_LOWER_BOUNDS,
 			OpponentId: &USER_ID,
 		})
 		var FROM = types.From{
