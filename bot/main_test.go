@@ -284,14 +284,30 @@ func TestCreateReply(t *testing.T) {
 	// TODO: cover case when opponentId != null
 	t.Run("ANY state with /reset - should set to initial state", func(t *testing.T) {
 		store := NewInMemoryStore()
-		store.SetDialogState(&USER_ID, &types.DialogState{State: types.WAITING_FOR_CONNECT})
+		store.SetDialogState(&USER_ID, &types.DialogState{
+			State:      types.SELECT_LOWER_BOUNDS,
+			OpponentId: &USER_ID_2,
+		})
+		store.SetDialogState(&USER_ID_2, &types.DialogState{
+			State:      types.SELECT_LOWER_BOUNDS,
+			OpponentId: &USER_ID,
+		})
 		var FROM = types.From{
 			ID:       int64(USER_ID),
 			USERNAME: "hello",
 		}
-		want := []types.ReplyDTO{
+		wantReply := []types.ReplyDTO{
 			{
 				UserId: FROM.ID,
+				Messages: []types.ReplyMessage{
+					{
+						Message:     MESSAGE_START_GUIDE,
+						ReplyMarkup: nil,
+					},
+				},
+			},
+			{
+				UserId: FROM_2.ID,
 				Messages: []types.ReplyMessage{
 					{
 						Message:     MESSAGE_START_GUIDE,
@@ -310,14 +326,15 @@ func TestCreateReply(t *testing.T) {
 			},
 		}
 
-		got, err := createReply(update, store)
+		gotReply, err := createReply(update, store)
 		if err != nil {
 			t.Errorf("shouldn't have error")
 		}
 
-		if !reflect.DeepEqual(got, want) {
-			t.Errorf("expected %v, got %v", want, got)
+		if !reflect.DeepEqual(gotReply, wantReply) {
+			t.Errorf("expected %v, got %v", wantReply, gotReply)
 		}
+
 	})
 
 	t.Run("UNEXPECTED state - should suggest the user to reset the state", func(t *testing.T) {
