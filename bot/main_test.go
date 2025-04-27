@@ -335,11 +335,20 @@ func TestCreateReply(t *testing.T) {
 			t.Errorf("expected %v, got %v", wantReply, gotReply)
 		}
 
+		wantState := &types.DialogState{
+			State: types.STATE_INITIAL,
+		}
+
+		gotUserState := store.GetDialogState(&USER_ID)
+		gotUser2State := store.GetDialogState(&USER_ID_2)
+
+		assertState(t, *gotUserState, *wantState)
+		assertState(t, *gotUser2State, *wantState)
 	})
 
 	t.Run("UNEXPECTED state - should suggest the user to reset the state", func(t *testing.T) {
 		store := NewInMemoryStore()
-		store.SetDialogState(&USER_ID, &types.DialogState{State: 100500})
+		store.SetDialogState(&USER_ID, &types.DialogState{State: "unexpected"})
 		var FROM = types.From{
 			ID:       int64(USER_ID),
 			USERNAME: "hello",
@@ -384,5 +393,12 @@ func assertNonErrorReply(t testing.TB, got, want []types.ReplyDTO, err error) {
 
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("expected \n%v, \ngot \n%v", want, got)
+	}
+}
+func assertState(t testing.TB, got, want types.DialogState) {
+	t.Helper()
+
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("expected state \n%v, \ngot state\n%v", want, got)
 	}
 }

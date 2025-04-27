@@ -1,14 +1,14 @@
 package types
 
-type State int
+type State string
 
 const (
-	STATE_INITIAL = iota
-	WAITING_FOR_CONNECT
-	SELECT_YOUR_ROLE
-	SELECT_LOWER_BOUNDS
-	SELECT_UPPER_BOUNDS
-	RESULT
+	STATE_INITIAL       = "initial"
+	WAITING_FOR_CONNECT = "waiting-for-connect"
+	SELECT_YOUR_ROLE    = "select-your-role"
+	SELECT_LOWER_BOUNDS = "select-lower-bounds"
+	SELECT_UPPER_BOUNDS = "select-upper-bounds"
+	RESULT              = "result"
 )
 
 type DialogState struct {

@@ -3,7 +3,6 @@ package router
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 	// "math/rand"
@@ -36,9 +35,9 @@ func HandleWebhook(ctx context.Context, client *telegram.Client, store types.Sto
 		return
 	}
 
-	log.Print("INFO: Raw body:\n", string(body))
-	body_debug, _ := json.MarshalIndent(body, "", " ")
-	fmt.Println(string(body_debug))
+	// log.Print("INFO: Raw body:\n", string(body))
+	// body_debug, _ := json.MarshalIndent(body, "", " ")
+	// fmt.Println(string(body_debug))
 
 	// keyboard := &tg.ReplyInlineMarkup{
 	// 	Rows: []tg.KeyboardButtonRow{
@@ -57,9 +56,9 @@ func HandleWebhook(ctx context.Context, client *telegram.Client, store types.Sto
 		return
 	}
 
-	log.Printf("INFO: Received webhook update:\n")
-	update_debug, _ := json.MarshalIndent(update, "", " ")
-	fmt.Println(string(update_debug))
+	// log.Printf("INFO: Received webhook update:\n")
+	// update_debug, _ := json.MarshalIndent(update, "", " ")
+	// fmt.Println(string(update_debug))
 
 	err = bot.HandleMessage(ctx, client, update, store)
 
