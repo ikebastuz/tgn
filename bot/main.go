@@ -31,6 +31,7 @@ func HandleMessage(ctx context.Context, client *telegram.Client, update types.Te
 					return err
 				}
 			} else {
+
 				_, err = client.API().MessagesSendMessage(ctx, &tg.MessagesSendMessageRequest{
 					RandomID:    rand.Int63(),
 					Peer:        &tg.InputPeerUser{UserID: reply.UserId},
