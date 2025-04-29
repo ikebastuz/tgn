@@ -284,6 +284,34 @@ func TestCreateReply(t *testing.T) {
 		}
 	})
 
+	t.Run("SELECT LOWER BOUNDS state - show error message on invalid value", func(t *testing.T) {
+		store := NewInMemoryStore()
+		store.SetDialogState(&USER_ID, types.DialogState{State: types.STATE_SELECT_LOWER_BOUNDS, OpponentId: &USER_ID_2})
+		want := []types.ReplyDTO{
+			{
+				UserId: FROM.ID,
+				Messages: []types.ReplyMessage{
+					{
+						Message:     MESSAGE_USE_VALID_POSITIVE_NUMBER,
+						ReplyMarkup: nil,
+					},
+				},
+			},
+		}
+
+		update := types.TelegramUpdate{
+			UpdateID: 1,
+			Message: types.Message{
+				MessageID: 1,
+				Text:      "qweasd",
+				From:      FROM,
+			},
+		}
+
+		got, err := createReply(update, store)
+		assertNonErrorReply(t, got, want, err)
+	})
+
 	// TODO: cover case when opponentId != null
 	t.Run("ANY state with /reset - should set to initial state", func(t *testing.T) {
 		store := NewInMemoryStore()
@@ -393,10 +421,6 @@ func assertNonErrorReply(t testing.TB, got, want []types.ReplyDTO, err error) {
 	if err != nil {
 		t.Errorf("shouldn't have error")
 	}
-
-	// if !reflect.DeepEqual(got, want) {
-	// 	t.Errorf("expected \n%v, \ngot \n%v", want, got)
-	// }
 
 	if diff := cmp.Diff(want, got); diff != "" {
 		t.Errorf("mismatch (-want +got):\n%s", diff)

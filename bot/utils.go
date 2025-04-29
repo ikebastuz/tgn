@@ -66,3 +66,15 @@ func isResetMessage(update *types.TelegramUpdate) bool {
 
 	return re.MatchString(text)
 }
+
+func parseSalary(message string) (int64, error) {
+	salaryStr := strings.TrimSpace(message)
+
+	value, err := strconv.ParseInt(salaryStr, 10, 64)
+
+	if err != nil {
+		return 0, err
+	}
+
+	return value, nil
+}

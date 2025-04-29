@@ -244,7 +244,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 		nextState1 := *dialogState
 		nextState1.State = types.STATE_SELECT_LOWER_BOUNDS
 
-		nextState2 := *store.GetDialogState(*&opponentId)
+		nextState2 := *store.GetDialogState(opponentId)
 		nextState2.State = types.STATE_SELECT_LOWER_BOUNDS
 		return []types.ReplyDTO{
 			{
@@ -268,6 +268,25 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 				NextState: &nextState2,
 			},
 		}, nil
+
+	case types.STATE_SELECT_LOWER_BOUNDS:
+		_, err := parseSalary(update.Message.Text)
+
+		if err != nil {
+			return []types.ReplyDTO{
+				{
+					UserId: userData.ID,
+					Messages: []types.ReplyMessage{
+						{
+							Message:     MESSAGE_USE_VALID_POSITIVE_NUMBER,
+							ReplyMarkup: nil,
+						},
+					},
+				},
+			}, nil
+		} else {
+			return []types.ReplyDTO{}, nil
+		}
 
 	default:
 		return []types.ReplyDTO{

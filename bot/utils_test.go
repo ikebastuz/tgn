@@ -137,3 +137,45 @@ func TestIsResetMessage(t *testing.T) {
 		}
 	})
 }
+
+func TestParseSalary(t *testing.T) {
+	t.Run("empty string is not valid salary", func(t *testing.T) {
+		_, err := parseSalary("")
+		if err == nil {
+			t.Errorf("should be invalid value")
+		}
+	})
+
+	t.Run("string is not valid salary", func(t *testing.T) {
+		_, err := parseSalary(" hello ")
+		if err == nil {
+			t.Errorf("should be invalid value")
+		}
+	})
+
+	t.Run("string with number is not valid salary", func(t *testing.T) {
+		_, err := parseSalary(" 123 hello 123")
+		if err == nil {
+			t.Errorf("should be invalid value")
+		}
+	})
+
+	t.Run("float number with spaces is not valid number", func(t *testing.T) {
+		var want int64 = 100500
+		got, err := parseSalary(" 100500 ")
+		if err != nil {
+			t.Errorf("should be invalid value")
+		}
+		if got != want {
+			t.Errorf("expected %d, got %d", want, got)
+		}
+	})
+
+	t.Run("integer number with spaces is a valid number", func(t *testing.T) {
+		_, err := parseSalary(" 100.500 ")
+		if err == nil {
+			t.Errorf("should be invalid value")
+		}
+	})
+
+}
