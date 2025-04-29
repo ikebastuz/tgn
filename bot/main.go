@@ -270,7 +270,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 		}, nil
 
 	case types.STATE_SELECT_LOWER_BOUNDS:
-		_, err := parseSalary(update.Message.Text)
+		lower_bound, err := parseSalary(update.Message.Text)
 
 		if err != nil {
 			return []types.ReplyDTO{
@@ -285,7 +285,22 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 				},
 			}, nil
 		} else {
-			return []types.ReplyDTO{}, nil
+			nextState := dialogState
+			nextState.State = types.STATE_SELECT_UPPER_BOUNDS
+			nextState.LowerBound = &lower_bound
+
+			return []types.ReplyDTO{
+				{
+					UserId: userData.ID,
+					Messages: []types.ReplyMessage{
+						{
+							Message:     MESSAGE_SELECT_SALARY_UPPER_BOUND,
+							ReplyMarkup: nil,
+						},
+					},
+					NextState: nextState,
+				},
+			}, nil
 		}
 
 	default:
