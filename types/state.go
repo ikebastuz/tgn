@@ -24,6 +24,10 @@ type DialogState struct {
 type StateType string
 type Role string
 
+type State_NG interface {
+	GetState() StateType
+}
+
 const (
 	STATE_INITIAL_NG             StateType = "initial"
 	STATE_WAITING_FOR_CONNECT_NG StateType = "waiting-for-connect"
@@ -39,14 +43,14 @@ const (
 )
 
 type StateMachine struct {
-	current StateType
+	current State_NG
 }
 
-func (sm *StateMachine) SetState(s StateType) {
+func (sm *StateMachine) SetState(s State_NG) {
 	sm.current = s
 }
 
-func (sm *StateMachine) GetState() StateType {
+func (sm *StateMachine) GetState() State_NG {
 	return sm.current
 }
 
