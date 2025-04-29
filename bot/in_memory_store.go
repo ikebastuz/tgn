@@ -8,7 +8,7 @@ import (
 )
 
 type InMemoryStore struct {
-	states      map[int64]types.DialogState
+	states      map[int64]*types.DialogState
 	connections map[int64]int64
 }
 
@@ -18,22 +18,22 @@ var DEFAULT_DIALOG_STATE = types.DialogState{
 
 func NewInMemoryStore() *InMemoryStore {
 	return &InMemoryStore{
-		states:      make(map[int64]types.DialogState),
+		states:      make(map[int64]*types.DialogState),
 		connections: make(map[int64]int64),
 	}
 }
 
 func (s *InMemoryStore) GetDialogState(userId *int64) *types.DialogState {
 	if state, exists := s.states[*userId]; exists {
-		return &state
+		return state
 	}
-	s.states[*userId] = DEFAULT_DIALOG_STATE
+	s.states[*userId] = &DEFAULT_DIALOG_STATE
 
 	return &DEFAULT_DIALOG_STATE
 }
 
-func (s *InMemoryStore) SetDialogState(userId *int64, state *types.DialogState) {
-	s.states[*userId] = *state
+func (s *InMemoryStore) SetDialogState(userId *int64, state types.DialogState) {
+	s.states[*userId] = &state
 }
 
 func (s *InMemoryStore) CreateConnectionId(userId *int64) int64 {
@@ -52,6 +52,10 @@ func (s *InMemoryStore) CreateConnectionId(userId *int64) int64 {
 		}
 	}
 	s.connections[id] = *userId
+
+	currentState := s.states[*userId]
+	currentState.ConnectionId = &id
+
 	return id
 }
 
@@ -63,15 +67,24 @@ func (s *InMemoryStore) GetConnectionTarget(connectionId *int64) *int64 {
 }
 
 func (s *InMemoryStore) DeleteConnectionId(connectionId *int64) error {
-	if _, exists := s.connections[*connectionId]; exists {
+	_, exists := s.connections[*connectionId]
+	if !exists {
+		return errors.New("no such connection")
+	} else {
 		delete(s.connections, *connectionId)
-		return nil
 	}
-	return errors.New("no such connection")
+
+	for _, state := range s.states {
+		if state.ConnectionId != nil && *state.ConnectionId == *connectionId {
+			state.ConnectionId = nil
+		}
+	}
+
+	return nil
 }
 
 func (s *InMemoryStore) ResetUserState(userId *int64) error {
-	s.states[*userId] = DEFAULT_DIALOG_STATE
+	s.states[*userId] = &DEFAULT_DIALOG_STATE
 
 	for connectionId, targetUserId := range s.connections {
 		if targetUserId == *userId {

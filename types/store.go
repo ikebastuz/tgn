@@ -6,5 +6,5 @@ type Store interface {
 	DeleteConnectionId(connectionId *int64) error
 	GetDialogState(userId *int64) *DialogState
 	ResetUserState(userId *int64) error
-	SetDialogState(userId *int64, state *DialogState)
+	SetDialogState(userId *int64, state DialogState)
 }

@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/ikebastuz/tgn/actions"
 	"github.com/ikebastuz/tgn/types"
 )
@@ -49,7 +50,7 @@ func TestCreateReply(t *testing.T) {
 
 	t.Run("INITIAL state, /start message - create connection to forward", func(t *testing.T) {
 		store := NewInMemoryStore()
-		store.states[USER_ID] = types.DialogState{
+		store.states[USER_ID] = &types.DialogState{
 			State:        types.STATE_INITIAL,
 			ConnectionId: &CONNECTION_ID,
 		}
@@ -144,7 +145,7 @@ func TestCreateReply(t *testing.T) {
 
 	t.Run("INITIAL state, /connect message to existing user - should connect correctly", func(t *testing.T) {
 		store := NewInMemoryStore()
-		store.states[USER_ID] = types.DialogState{
+		store.states[USER_ID] = &types.DialogState{
 			State:        types.STATE_INITIAL,
 			ConnectionId: &CONNECTION_ID,
 		}
@@ -192,7 +193,7 @@ func TestCreateReply(t *testing.T) {
 
 	t.Run("WAITING state, - tells about waiting for connection", func(t *testing.T) {
 		store := NewInMemoryStore()
-		store.SetDialogState(&USER_ID, &types.DialogState{State: types.STATE_WAITING_FOR_CONNECT})
+		store.SetDialogState(&USER_ID, types.DialogState{State: types.STATE_WAITING_FOR_CONNECT})
 		var FROM = types.From{
 			ID:       int64(USER_ID),
 			USERNAME: "hello",
@@ -230,8 +231,8 @@ func TestCreateReply(t *testing.T) {
 
 	t.Run("SELECT ROLE state - update both users and ask for lower bounds", func(t *testing.T) {
 		store := NewInMemoryStore()
-		store.SetDialogState(&USER_ID, &types.DialogState{State: types.STATE_SELECT_YOUR_ROLE, OpponentId: &USER_ID_2})
-		store.SetDialogState(&USER_ID_2, &types.DialogState{State: types.STATE_SELECT_YOUR_ROLE, OpponentId: &USER_ID})
+		store.SetDialogState(&USER_ID, types.DialogState{State: types.STATE_SELECT_YOUR_ROLE, OpponentId: &USER_ID_2})
+		store.SetDialogState(&USER_ID_2, types.DialogState{State: types.STATE_SELECT_YOUR_ROLE, OpponentId: &USER_ID})
 		want := []types.ReplyDTO{
 			{
 				UserId: FROM.ID,
@@ -242,7 +243,8 @@ func TestCreateReply(t *testing.T) {
 					},
 				},
 				NextState: &types.DialogState{
-					State: types.STATE_SELECT_LOWER_BOUNDS,
+					State:      types.STATE_SELECT_LOWER_BOUNDS,
+					OpponentId: &USER_ID_2,
 				},
 			},
 			{
@@ -254,7 +256,8 @@ func TestCreateReply(t *testing.T) {
 					},
 				},
 				NextState: &types.DialogState{
-					State: types.STATE_SELECT_LOWER_BOUNDS,
+					State:      types.STATE_SELECT_LOWER_BOUNDS,
+					OpponentId: &USER_ID,
 				},
 			},
 		}
@@ -284,11 +287,11 @@ func TestCreateReply(t *testing.T) {
 	// TODO: cover case when opponentId != null
 	t.Run("ANY state with /reset - should set to initial state", func(t *testing.T) {
 		store := NewInMemoryStore()
-		store.SetDialogState(&USER_ID, &types.DialogState{
+		store.SetDialogState(&USER_ID, types.DialogState{
 			State:      types.STATE_SELECT_LOWER_BOUNDS,
 			OpponentId: &USER_ID_2,
 		})
-		store.SetDialogState(&USER_ID_2, &types.DialogState{
+		store.SetDialogState(&USER_ID_2, types.DialogState{
 			State:      types.STATE_SELECT_LOWER_BOUNDS,
 			OpponentId: &USER_ID,
 		})
@@ -348,7 +351,7 @@ func TestCreateReply(t *testing.T) {
 
 	t.Run("UNEXPECTED state - should suggest the user to reset the state", func(t *testing.T) {
 		store := NewInMemoryStore()
-		store.SetDialogState(&USER_ID, &types.DialogState{State: "unexpected"})
+		store.SetDialogState(&USER_ID, types.DialogState{State: "unexpected"})
 		var FROM = types.From{
 			ID:       int64(USER_ID),
 			USERNAME: "hello",
@@ -380,7 +383,7 @@ func TestCreateReply(t *testing.T) {
 		}
 
 		if !reflect.DeepEqual(got, want) {
-			t.Errorf("expected %v, got %v", want, got)
+			t.Errorf("expected %+v, got %+v", want, got)
 		}
 	})
 }
@@ -391,8 +394,12 @@ func assertNonErrorReply(t testing.TB, got, want []types.ReplyDTO, err error) {
 		t.Errorf("shouldn't have error")
 	}
 
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("expected \n%v, \ngot \n%v", want, got)
+	// if !reflect.DeepEqual(got, want) {
+	// 	t.Errorf("expected \n%v, \ngot \n%v", want, got)
+	// }
+
+	if diff := cmp.Diff(want, got); diff != "" {
+		t.Errorf("mismatch (-want +got):\n%s", diff)
 	}
 }
 func assertState(t testing.TB, got, want types.DialogState) {

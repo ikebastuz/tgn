@@ -46,7 +46,7 @@ func HandleMessage(ctx context.Context, client *telegram.Client, update types.Te
 		}
 
 		if reply.NextState != nil {
-			store.SetDialogState(&reply.UserId, reply.NextState)
+			store.SetDialogState(&reply.UserId, *reply.NextState)
 		}
 	}
 
@@ -114,6 +114,11 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 			// Start message
 			// TODO: check if not connection exists
 			newConnectionId := store.CreateConnectionId(&userData.ID)
+
+			nextState := *dialogState
+			nextState.State = types.STATE_WAITING_FOR_CONNECT
+			nextState.ConnectionId = &newConnectionId
+
 			return []types.ReplyDTO{
 				{
 					UserId: userData.ID,
@@ -123,10 +128,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 							ReplyMarkup: nil,
 						},
 					},
-					NextState: &types.DialogState{
-						State:        types.STATE_WAITING_FOR_CONNECT,
-						ConnectionId: &newConnectionId,
-					},
+					NextState: &nextState,
 				},
 				{
 					UserId: userData.ID,
@@ -172,7 +174,18 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 			} else {
 				log.Infof("Connecting USER %d to USER %d", userData.ID, *targetUserId)
 				// TODO: update store
-				store.DeleteConnectionId(&incomingConnectionId)
+				err := store.DeleteConnectionId(&incomingConnectionId)
+				if err != nil {
+					log.Warnf("No connection %d to delete", incomingConnectionId)
+				}
+
+				nextState1 := *dialogState
+				nextState1.State = types.STATE_SELECT_YOUR_ROLE
+				nextState1.OpponentId = targetUserId
+
+				nextState2 := *store.GetDialogState(targetUserId)
+				nextState2.State = types.STATE_SELECT_YOUR_ROLE
+				nextState2.OpponentId = &userData.ID
 				return []types.ReplyDTO{
 					{
 						UserId: userData.ID,
@@ -182,10 +195,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 								ReplyMarkup: KEYBOARD_SELECT_YOUR_ROLE,
 							},
 						},
-						NextState: &types.DialogState{
-							State:      types.STATE_SELECT_YOUR_ROLE,
-							OpponentId: targetUserId,
-						},
+						NextState: &nextState1,
 					},
 					{
 						UserId: *targetUserId,
@@ -195,10 +205,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 								ReplyMarkup: KEYBOARD_SELECT_YOUR_ROLE,
 							},
 						},
-						NextState: &types.DialogState{
-							State:      types.STATE_SELECT_YOUR_ROLE,
-							OpponentId: &userData.ID,
-						},
+						NextState: &nextState2,
 					},
 				}, nil
 			}
@@ -234,6 +241,11 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 	case types.STATE_SELECT_YOUR_ROLE:
 		opponentId := dialogState.OpponentId
 
+		nextState1 := *dialogState
+		nextState1.State = types.STATE_SELECT_LOWER_BOUNDS
+
+		nextState2 := *store.GetDialogState(*&opponentId)
+		nextState2.State = types.STATE_SELECT_LOWER_BOUNDS
 		return []types.ReplyDTO{
 			{
 				UserId: userData.ID,
@@ -243,9 +255,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 						ReplyMarkup: nil,
 					},
 				},
-				NextState: &types.DialogState{
-					State: types.STATE_SELECT_LOWER_BOUNDS,
-				},
+				NextState: &nextState1,
 			},
 			{
 				UserId: *opponentId,
@@ -255,9 +265,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 						ReplyMarkup: nil,
 					},
 				},
-				NextState: &types.DialogState{
-					State: types.STATE_SELECT_LOWER_BOUNDS,
-				},
+				NextState: &nextState2,
 			},
 		}, nil
 
