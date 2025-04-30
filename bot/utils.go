@@ -17,7 +17,7 @@ func createConnectionMessage(userName string, connectionId int64) string {
 }
 
 func createResultMessage(salary int64) string {
-	return fmt.Sprintf(MESSAGE_RESULT, salary)
+	return fmt.Sprintf(MESSAGE_RESULT_SUCCESS, salary)
 }
 
 func getUserData(update types.TelegramUpdate) (*types.From, error) {

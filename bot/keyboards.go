@@ -16,3 +16,13 @@ var KEYBOARD_SELECT_YOUR_ROLE = &tg.ReplyInlineMarkup{
 		},
 	},
 }
+var KEYBOARD_SELECT_YES_NO = &tg.ReplyInlineMarkup{
+	Rows: []tg.KeyboardButtonRow{
+		{
+			Buttons: []tg.KeyboardButtonClass{
+				actions.BUTTON_SELECT_YES,
+				actions.BUTTON_SELECT_NO,
+			},
+		},
+	},
+}

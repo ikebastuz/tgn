@@ -598,7 +598,7 @@ func TestCreateReply(t *testing.T) {
 		})
 		store.states[USER_ID_2] = &sm2
 
-		var nextState types.State = &types.ResultState{
+		var nextState types.State = &types.ResultSuccessState{
 			OpponentId: &USER_ID_2,
 			Role:       types.ROLE_EMPLOYEE,
 			LowerBound: &lower_bound,
@@ -623,6 +623,60 @@ func TestCreateReply(t *testing.T) {
 			Message: types.Message{
 				MessageID: 1,
 				Text:      fmt.Sprintf("%d", upper_bound),
+				From:      FROM,
+			},
+		}
+
+		got, err := createReply(update, store)
+		assertNonErrorReply(t, got, want, err)
+	})
+
+	t.Run("SELECT UPPER BOUNDS state - Opponent is ready and there is no shared number - suggest restarting", func(t *testing.T) {
+		var lower_bound1 int64 = 100
+		var upper_bound1 int64 = 200
+		var lower_bound2 int64 = 10
+		var upper_bound2 int64 = 20
+		store := NewInMemoryStore()
+
+		sm1 := types.StateMachine{}
+		sm1.SetState(&types.SelectUpperBoundsState{
+			OpponentId: &USER_ID_2,
+			Role:       types.ROLE_EMPLOYEE,
+			LowerBound: &lower_bound1,
+		})
+		store.states[USER_ID] = &sm1
+
+		sm2 := types.StateMachine{}
+		sm2.SetState(&types.WaitingForResultState{
+			OpponentId: &USER_ID_2,
+			Role:       types.ROLE_EMPLOYEE,
+			LowerBound: &lower_bound2,
+			UpperBound: &upper_bound2,
+		})
+		store.states[USER_ID_2] = &sm2
+
+		var nextState types.State = &types.ResultErrorState{
+			OpponentId: &USER_ID_2,
+			Role:       types.ROLE_EMPLOYEE,
+		}
+		want := []types.ReplyDTO{
+			{
+				UserId: FROM.ID,
+				Messages: []types.ReplyMessage{
+					{
+						Message:     MESSAGE_RESULT_ERROR,
+						ReplyMarkup: KEYBOARD_SELECT_YES_NO,
+					},
+				},
+				NextState: &nextState,
+			},
+		}
+
+		update := types.TelegramUpdate{
+			UpdateID: 1,
+			Message: types.Message{
+				MessageID: 1,
+				Text:      fmt.Sprintf("%d", upper_bound1),
 				From:      FROM,
 			},
 		}

@@ -16,7 +16,8 @@ const (
 	STATE_SELECT_LOWER_BOUNDS StateType = "select-lower-bounds"
 	STATE_SELECT_UPPER_BOUNDS StateType = "select-upper-bounds"
 	STATE_WAITING_FOR_RESULT  StateType = "waiting-for-result"
-	STATE_RESULT              StateType = "result"
+	STATE_RESULT_SUCCESS      StateType = "result-success"
+	STATE_RESULT_ERROR        StateType = "result-error"
 	STATE_UNEXPECTED          StateType = "unexpected"
 )
 
@@ -89,7 +90,7 @@ func (s *WaitingForResultState) GetState() StateType {
 	return STATE_WAITING_FOR_RESULT
 }
 
-type ResultState struct {
+type ResultSuccessState struct {
 	OpponentId *int64
 	Role       Role
 	LowerBound *int64
@@ -97,8 +98,17 @@ type ResultState struct {
 	Result     *int64
 }
 
-func (s *ResultState) GetState() StateType {
-	return STATE_RESULT
+func (s *ResultSuccessState) GetState() StateType {
+	return STATE_RESULT_SUCCESS
+}
+
+type ResultErrorState struct {
+	OpponentId *int64
+	Role       Role
+}
+
+func (s *ResultErrorState) GetState() StateType {
+	return STATE_RESULT_ERROR
 }
 
 type UnexpectedState struct{}

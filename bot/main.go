@@ -355,9 +355,24 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 
 				salary, err := solver.Solve(employeeRange, employerRange)
 				if err != nil {
-					// TODO handle retry
+					var nextState types.State = &types.ResultErrorState{
+						OpponentId: s.OpponentId,
+						Role:       s.Role,
+					}
+					return []types.ReplyDTO{
+						{
+							UserId: userData.ID,
+							Messages: []types.ReplyMessage{
+								{
+									Message:     MESSAGE_RESULT_ERROR,
+									ReplyMarkup: KEYBOARD_SELECT_YES_NO,
+								},
+							},
+							NextState: &nextState,
+						},
+					}, nil
 				}
-				var nextState types.State = &types.ResultState{
+				var nextState types.State = &types.ResultSuccessState{
 					OpponentId: s.OpponentId,
 					Role:       s.Role,
 					LowerBound: s.LowerBound,
