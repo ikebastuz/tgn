@@ -480,7 +480,43 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 				},
 			}, nil
 		} else if update.CallbackQuery.Data == actions.ACTION_SELECT_YES {
-			return []types.ReplyDTO{}, nil
+			var nextState1 types.State = &types.SelectLowerBoundsState{
+				OpponentId: s.OpponentId,
+				Role:       s.Role,
+			}
+			var opponentRole types.Role
+			if s.Role == types.ROLE_EMPLOYEE {
+				opponentRole = types.ROLE_EMPLOYER
+			}
+			if s.Role == types.ROLE_EMPLOYER {
+				opponentRole = types.ROLE_EMPLOYEE
+			}
+			var nextState2 types.State = &types.SelectLowerBoundsState{
+				OpponentId: &userData.ID,
+				Role:       opponentRole,
+			}
+			return []types.ReplyDTO{
+				{
+					UserId: userData.ID,
+					Messages: []types.ReplyMessage{
+						{
+							Message:     MESSAGE_SELECT_SALARY_LOWER_BOUND,
+							ReplyMarkup: nil,
+						},
+					},
+					NextState: &nextState1,
+				},
+				{
+					UserId: *s.OpponentId,
+					Messages: []types.ReplyMessage{
+						{
+							Message:     MESSAGE_SELECT_SALARY_LOWER_BOUND,
+							ReplyMarkup: nil,
+						},
+					},
+					NextState: &nextState2,
+				},
+			}, nil
 		} else {
 			return []types.ReplyDTO{}, nil
 		}

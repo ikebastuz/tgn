@@ -803,6 +803,70 @@ func TestCreateReply(t *testing.T) {
 		assertNonErrorReply(t, got, want, err)
 	})
 
+	t.Run("RESULT Error state - Selected Yes - Move to select lower bounds state", func(t *testing.T) {
+		store := NewInMemoryStore()
+
+		sm1 := types.StateMachine{}
+		sm1.SetState(&types.ResultErrorState{
+			OpponentId: &USER_ID_2,
+			Role:       types.ROLE_EMPLOYEE,
+		})
+		store.states[USER_ID] = &sm1
+
+		sm2 := types.StateMachine{}
+		sm2.SetState(&types.ResultErrorState{
+			OpponentId: &USER_ID,
+			Role:       types.ROLE_EMPLOYER,
+		})
+		store.states[USER_ID_2] = &sm2
+
+		var nextState1 types.State = &types.SelectLowerBoundsState{
+			OpponentId: &USER_ID_2,
+			Role:       types.ROLE_EMPLOYEE,
+		}
+		var nextState2 types.State = &types.SelectLowerBoundsState{
+			OpponentId: &USER_ID,
+			Role:       types.ROLE_EMPLOYER,
+		}
+
+		want := []types.ReplyDTO{
+			{
+				UserId: FROM.ID,
+				Messages: []types.ReplyMessage{
+					{
+						Message:     MESSAGE_SELECT_SALARY_LOWER_BOUND,
+						ReplyMarkup: nil,
+					},
+				},
+				NextState: &nextState1,
+			},
+			{
+				UserId: USER_ID_2,
+				Messages: []types.ReplyMessage{
+					{
+						Message:     MESSAGE_SELECT_SALARY_LOWER_BOUND,
+						ReplyMarkup: nil,
+					},
+				},
+				NextState: &nextState2,
+			},
+		}
+
+		update := types.TelegramUpdate{
+			UpdateID: 1,
+			Message: types.Message{
+				MessageID: 1,
+				Text:      "anything",
+				From:      FROM,
+			},
+			CallbackQuery: types.CallbackQuery{
+				Data: actions.ACTION_SELECT_YES,
+			},
+		}
+
+		got, err := createReply(update, store)
+		assertNonErrorReply(t, got, want, err)
+	})
 	t.Run("ANY state with /reset - should set to initial state", func(t *testing.T) {
 		store := NewInMemoryStore()
 		sm1 := types.StateMachine{}
