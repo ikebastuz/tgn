@@ -231,9 +231,7 @@ func TestCreateReply(t *testing.T) {
 			t.Errorf("shouldn't have error")
 		}
 
-		if !reflect.DeepEqual(got, want) {
-			t.Errorf("expected %v, got %v", want, got)
-		}
+		assertNonErrorReply(t, got, want, err)
 	})
 
 	t.Run("SELECT ROLE state - selected EMPLOYEE - update both users and ask for lower bounds", func(t *testing.T) {
@@ -628,9 +626,7 @@ func TestCreateReply(t *testing.T) {
 			t.Errorf("shouldn't have error")
 		}
 
-		if !reflect.DeepEqual(got, want) {
-			t.Errorf("expected %+v, got %+v", want, got)
-		}
+		assertNonErrorReply(t, got, want, err)
 	})
 }
 
