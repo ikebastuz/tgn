@@ -54,7 +54,7 @@ func TestCreateReply(t *testing.T) {
 		sm.SetState(&types.InitialState{})
 		store.states[USER_ID] = &sm
 
-		var nextState types.State_NG = &types.WaitingForConnectState{
+		var nextState types.State = &types.WaitingForConnectState{
 			ConnectionId: &CONNECTION_ID,
 		}
 		want := []types.ReplyDTO{
@@ -152,10 +152,10 @@ func TestCreateReply(t *testing.T) {
 		store.states[USER_ID] = &sm
 		store.connections[CONNECTION_ID] = USER_ID
 
-		var nextState1 types.State_NG = &types.SelectYourRoleState{
+		var nextState1 types.State = &types.SelectYourRoleState{
 			OpponentId: &FROM_2.ID,
 		}
-		var nextState2 types.State_NG = &types.SelectYourRoleState{
+		var nextState2 types.State = &types.SelectYourRoleState{
 			OpponentId: &FROM.ID,
 		}
 
@@ -248,11 +248,11 @@ func TestCreateReply(t *testing.T) {
 		})
 		store.states[USER_ID_2] = &sm2
 
-		var nextState1 types.State_NG = &types.SelectLowerBoundsState{
+		var nextState1 types.State = &types.SelectLowerBoundsState{
 			OpponentId: &USER_ID_2,
 			Role:       types.ROLE_EMPLOYEE,
 		}
-		var nextState2 types.State_NG = &types.SelectLowerBoundsState{
+		var nextState2 types.State = &types.SelectLowerBoundsState{
 			OpponentId: &USER_ID,
 			Role:       types.ROLE_EMPLOYER,
 		}
@@ -312,11 +312,11 @@ func TestCreateReply(t *testing.T) {
 		})
 		store.states[USER_ID_2] = &sm2
 
-		var nextState1 types.State_NG = &types.SelectLowerBoundsState{
+		var nextState1 types.State = &types.SelectLowerBoundsState{
 			OpponentId: &USER_ID_2,
 			Role:       types.ROLE_EMPLOYER,
 		}
-		var nextState2 types.State_NG = &types.SelectLowerBoundsState{
+		var nextState2 types.State = &types.SelectLowerBoundsState{
 			OpponentId: &USER_ID,
 			Role:       types.ROLE_EMPLOYEE,
 		}
@@ -492,7 +492,7 @@ func TestCreateReply(t *testing.T) {
 		})
 		store.states[USER_ID] = &sm
 
-		var nextState types.State_NG = &types.SelectUpperBoundsState{
+		var nextState types.State = &types.SelectUpperBoundsState{
 			OpponentId: &USER_ID_2,
 			Role:       types.ROLE_EMPLOYEE,
 			LowerBound: &lower_bound,

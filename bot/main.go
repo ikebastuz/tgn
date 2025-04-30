@@ -101,7 +101,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 			// TODO: check if not connection exists
 			newConnectionId := store.CreateConnectionId(&userData.ID)
 
-			var nextState types.State_NG = &types.WaitingForConnectState{
+			var nextState types.State = &types.WaitingForConnectState{
 				ConnectionId: &newConnectionId,
 			}
 
@@ -165,10 +165,10 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 					log.Warnf("No connection %d to delete", incomingConnectionId)
 				}
 
-				var nextState1 types.State_NG = &types.SelectYourRoleState{
+				var nextState1 types.State = &types.SelectYourRoleState{
 					OpponentId: targetUserId,
 				}
-				var nextState2 types.State_NG = &types.SelectYourRoleState{
+				var nextState2 types.State = &types.SelectYourRoleState{
 					OpponentId: &userData.ID,
 				}
 				return []types.ReplyDTO{
@@ -247,11 +247,11 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 			}, nil
 		}
 
-		var nextState1 types.State_NG = &types.SelectLowerBoundsState{
+		var nextState1 types.State = &types.SelectLowerBoundsState{
 			OpponentId: s.OpponentId,
 			Role:       nextRole1,
 		}
-		var nextState2 types.State_NG = &types.SelectLowerBoundsState{
+		var nextState2 types.State = &types.SelectLowerBoundsState{
 			OpponentId: &userData.ID,
 			Role:       nextRole2,
 		}
@@ -294,7 +294,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 				},
 			}, nil
 		} else {
-			var nextState types.State_NG = &types.SelectUpperBoundsState{
+			var nextState types.State = &types.SelectUpperBoundsState{
 				OpponentId: s.OpponentId,
 				Role:       s.Role,
 				LowerBound: &lower_bound,

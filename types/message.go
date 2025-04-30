@@ -38,5 +38,5 @@ type ReplyMessage struct {
 type ReplyDTO struct {
 	UserId    int64
 	Messages  []ReplyMessage
-	NextState *State_NG
+	NextState *State
 }

@@ -32,7 +32,7 @@ func (s *InMemoryStore) GetDialogState(userId *int64) *types.StateMachine {
 	return sm
 }
 
-func (s *InMemoryStore) SetDialogState(userId *int64, state types.State_NG) {
+func (s *InMemoryStore) SetDialogState(userId *int64, state types.State) {
 	if sm, exists := s.states[*userId]; exists {
 		sm.SetState(state)
 		return

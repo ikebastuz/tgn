@@ -5,18 +5,18 @@ package types
 type StateType string
 type Role string
 
-type State_NG interface {
+type State interface {
 	GetState() StateType
 }
 
 const (
-	STATE_INITIAL_NG             StateType = "initial"
-	STATE_WAITING_FOR_CONNECT_NG StateType = "waiting-for-connect"
-	STATE_SELECT_YOUR_ROLE_NG    StateType = "select-your-role"
-	STATE_SELECT_LOWER_BOUNDS_NG StateType = "select-lower-bounds"
-	STATE_SELECT_UPPER_BOUNDS_NG StateType = "select-upper-bounds"
-	STATE_RESULT_NG              StateType = "result"
-	STATE_UNEXPECTED             StateType = "unexpected"
+	STATE_INITIAL             StateType = "initial"
+	STATE_WAITING_FOR_CONNECT StateType = "waiting-for-connect"
+	STATE_SELECT_YOUR_ROLE    StateType = "select-your-role"
+	STATE_SELECT_LOWER_BOUNDS StateType = "select-lower-bounds"
+	STATE_SELECT_UPPER_BOUNDS StateType = "select-upper-bounds"
+	STATE_RESULT              StateType = "result"
+	STATE_UNEXPECTED          StateType = "unexpected"
 )
 
 const (
@@ -25,21 +25,21 @@ const (
 )
 
 type StateMachine struct {
-	current State_NG
+	current State
 }
 
-func (sm *StateMachine) SetState(s State_NG) {
+func (sm *StateMachine) SetState(s State) {
 	sm.current = s
 }
 
-func (sm *StateMachine) GetState() State_NG {
+func (sm *StateMachine) GetState() State {
 	return sm.current
 }
 
 type InitialState struct{}
 
 func (s *InitialState) GetState() StateType {
-	return STATE_INITIAL_NG
+	return STATE_INITIAL
 }
 
 type WaitingForConnectState struct {
@@ -47,7 +47,7 @@ type WaitingForConnectState struct {
 }
 
 func (s *WaitingForConnectState) GetState() StateType {
-	return STATE_WAITING_FOR_CONNECT_NG
+	return STATE_WAITING_FOR_CONNECT
 }
 
 type SelectYourRoleState struct {
@@ -55,7 +55,7 @@ type SelectYourRoleState struct {
 }
 
 func (s *SelectYourRoleState) GetState() StateType {
-	return STATE_SELECT_YOUR_ROLE_NG
+	return STATE_SELECT_YOUR_ROLE
 }
 
 type SelectLowerBoundsState struct {
@@ -64,7 +64,7 @@ type SelectLowerBoundsState struct {
 }
 
 func (s *SelectLowerBoundsState) GetState() StateType {
-	return STATE_SELECT_LOWER_BOUNDS_NG
+	return STATE_SELECT_LOWER_BOUNDS
 }
 
 type SelectUpperBoundsState struct {
@@ -74,7 +74,7 @@ type SelectUpperBoundsState struct {
 }
 
 func (s *SelectUpperBoundsState) GetState() StateType {
-	return STATE_SELECT_UPPER_BOUNDS_NG
+	return STATE_SELECT_UPPER_BOUNDS
 }
 
 type ResultState struct {
@@ -85,7 +85,7 @@ type ResultState struct {
 }
 
 func (s *ResultState) GetState() StateType {
-	return STATE_RESULT_NG
+	return STATE_RESULT
 }
 
 type UnexpectedState struct{}
