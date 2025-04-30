@@ -524,71 +524,74 @@ func TestCreateReply(t *testing.T) {
 		got, err := createReply(update, store)
 		assertNonErrorReply(t, got, want, err)
 	})
-	//
-	// // TODO: cover case when opponentId != null
-	// t.Run("ANY state with /reset - should set to initial state", func(t *testing.T) {
-	// 	store := NewInMemoryStore()
-	// 	store.SetDialogState(&USER_ID, types.DialogState{
-	// 		State:      types.STATE_SELECT_LOWER_BOUNDS,
-	// 		OpponentId: &USER_ID_2,
-	// 	})
-	// 	store.SetDialogState(&USER_ID_2, types.DialogState{
-	// 		State:      types.STATE_SELECT_LOWER_BOUNDS,
-	// 		OpponentId: &USER_ID,
-	// 	})
-	// 	var FROM = types.From{
-	// 		ID:       int64(USER_ID),
-	// 		USERNAME: "hello",
-	// 	}
-	// 	wantReply := []types.ReplyDTO{
-	// 		{
-	// 			UserId: FROM.ID,
-	// 			Messages: []types.ReplyMessage{
-	// 				{
-	// 					Message:     MESSAGE_START_GUIDE,
-	// 					ReplyMarkup: nil,
-	// 				},
-	// 			},
-	// 		},
-	// 		{
-	// 			UserId: FROM_2.ID,
-	// 			Messages: []types.ReplyMessage{
-	// 				{
-	// 					Message:     MESSAGE_START_GUIDE,
-	// 					ReplyMarkup: nil,
-	// 				},
-	// 			},
-	// 		},
-	// 	}
-	//
-	// 	update := types.TelegramUpdate{
-	// 		UpdateID: 1,
-	// 		Message: types.Message{
-	// 			MessageID: 1,
-	// 			Text:      " /reset ",
-	// 			From:      FROM,
-	// 		},
-	// 	}
-	//
-	// 	gotReply, err := createReply(update, store)
-	// 	if err != nil {
-	// 		t.Errorf("shouldn't have error")
-	// 	}
-	//
-	// 	if !reflect.DeepEqual(gotReply, wantReply) {
-	// 		t.Errorf("expected %v, got %v", wantReply, gotReply)
-	// 	}
-	//
-	// 	wantState := &types.DialogState{
-	// 		State: types.STATE_INITIAL,
-	// 	}
-	//
-	// 	gotUserState := store.GetDialogState(&USER_ID)
-	// 	gotUser2State := store.GetDialogState(&USER_ID_2)
-	//
-	// 	assertState(t, *gotUserState, *wantState)
-	// 	assertState(t, *gotUser2State, *wantState)
-	// })
+
+	t.Run("ANY state with /reset - should set to initial state", func(t *testing.T) {
+		store := NewInMemoryStore()
+		sm1 := types.StateMachine{}
+		sm1.SetState(&types.SelectLowerBoundsState{
+			OpponentId: &USER_ID_2,
+			Role:       types.ROLE_EMPLOYEE,
+		})
+		store.states[USER_ID] = &sm1
+
+		sm2 := types.StateMachine{}
+		sm2.SetState(&types.SelectLowerBoundsState{
+			OpponentId: &USER_ID,
+			Role:       types.ROLE_EMPLOYER,
+		})
+		store.states[USER_ID_2] = &sm2
+
+		var FROM = types.From{
+			ID:       int64(USER_ID),
+			USERNAME: "hello",
+		}
+		wantReply := []types.ReplyDTO{
+			{
+				UserId: USER_ID_2,
+				Messages: []types.ReplyMessage{
+					{
+						Message:     MESSAGE_START_GUIDE,
+						ReplyMarkup: nil,
+					},
+				},
+			},
+			{
+				UserId: USER_ID,
+				Messages: []types.ReplyMessage{
+					{
+						Message:     MESSAGE_START_GUIDE,
+						ReplyMarkup: nil,
+					},
+				},
+			},
+		}
+
+		update := types.TelegramUpdate{
+			UpdateID: 1,
+			Message: types.Message{
+				MessageID: 1,
+				Text:      " /reset ",
+				From:      FROM,
+			},
+		}
+
+		gotReply, err := createReply(update, store)
+		if err != nil {
+			t.Errorf("shouldn't have error")
+		}
+
+		assertNonErrorReply(t, gotReply, wantReply, err)
+
+		// wantState := &types.DialogState{
+		// 	State: types.STATE_INITIAL,
+		// }
+		//
+		// gotUserState := store.GetDialogState(&USER_ID)
+		// gotUser2State := store.GetDialogState(&USER_ID_2)
+		//
+		// assertState(t, *gotUserState, *wantState)
+		// assertState(t, *gotUser2State, *wantState)
+	})
 	//
 	// t.Run("UNEXPECTED state - should suggest the user to reset the state", func(t *testing.T) {
 	// 	store := NewInMemoryStore()

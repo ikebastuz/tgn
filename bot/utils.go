@@ -78,3 +78,17 @@ func parseSalary(message string) (int64, error) {
 
 	return value, nil
 }
+
+func resetUserState(userId *int64, store types.Store) types.ReplyDTO {
+	store.ResetUserState(userId)
+
+	return types.ReplyDTO{
+		UserId: *userId,
+		Messages: []types.ReplyMessage{
+			{
+				Message:     MESSAGE_START_GUIDE,
+				ReplyMarkup: nil,
+			},
+		},
+	}
+}

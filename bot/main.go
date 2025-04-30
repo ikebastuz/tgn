@@ -69,37 +69,24 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 
 		// TODO: handle case when already connected to another user
 		// need to reset that user as well
-		log.Infof("Resetting user %d state aswell", userData.ID)
-		store.ResetUserState(&userData.ID)
-
-		response := []types.ReplyDTO{
-			{
-				UserId: userData.ID,
-				Messages: []types.ReplyMessage{
-					{
-						Message:     MESSAGE_START_GUIDE,
-						ReplyMarkup: nil,
-					},
-				},
-			},
-		}
+		response := []types.ReplyDTO{}
+		log.Infof("debug %v", sm.GetState().GetState())
 		switch s := sm.GetState().(type) {
 		case *types.SelectUpperBoundsState:
+			log.Infof("Resetting opponent %d state aswell", *s.OpponentId)
+			response = append(response, resetUserState(s.OpponentId, store))
 		case *types.SelectLowerBoundsState:
+			log.Infof("Resetting opponent %d state aswell", *s.OpponentId)
+			response = append(response, resetUserState(s.OpponentId, store))
 		case *types.SelectYourRoleState:
 			log.Infof("Resetting opponent %d state aswell", *s.OpponentId)
-
-			store.ResetUserState(s.OpponentId)
-			response = append(response, types.ReplyDTO{
-				UserId: *s.OpponentId,
-				Messages: []types.ReplyMessage{
-					{
-						Message:     MESSAGE_START_GUIDE,
-						ReplyMarkup: nil,
-					},
-				},
-			})
+			response = append(response, resetUserState(s.OpponentId, store))
+		default:
+			log.Info("default")
 		}
+
+		log.Infof("Resetting user %d state", userData.ID)
+		response = append(response, resetUserState(&userData.ID, store))
 		return response, nil
 	}
 
