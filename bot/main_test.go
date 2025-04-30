@@ -1,7 +1,7 @@
 package bot
 
 import (
-	// "fmt"
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -12,15 +12,15 @@ import (
 
 func TestCreateReply(t *testing.T) {
 	var USER_ID int64 = 123
-	// var USER_ID_2 int64 = 124
+	var USER_ID_2 int64 = 124
 	var FROM = types.From{
 		ID:       int64(USER_ID),
 		USERNAME: "hello",
 	}
-	// var FROM_2 = types.From{
-	// 	ID:       int64(USER_ID_2),
-	// 	USERNAME: "hello 2",
-	// }
+	var FROM_2 = types.From{
+		ID:       int64(USER_ID_2),
+		USERNAME: "hello 2",
+	}
 	var CONNECTION_ID int64 = 100500
 
 	t.Run("INITIAL state, irrelevant message - should show guide", func(t *testing.T) {
@@ -91,105 +91,107 @@ func TestCreateReply(t *testing.T) {
 		assertSingleReply(t, got[1], want[1], err)
 	})
 
-	// t.Run("INITIAL state, /connect message to yourself - should show an error", func(t *testing.T) {
-	// 	store := NewInMemoryStore()
-	// 	store.connections[CONNECTION_ID] = USER_ID
-	//
-	// 	want := []types.ReplyDTO{
-	// 		{
-	// 			UserId: FROM.ID,
-	// 			Messages: []types.ReplyMessage{
-	// 				{
-	// 					Message:     MESSAGE_YOU_CANT_CONNECT_TO_YOURSELF,
-	// 					ReplyMarkup: nil,
-	// 				},
-	// 			},
-	// 		},
-	// 	}
-	//
-	// 	update := types.TelegramUpdate{
-	// 		Message: types.Message{
-	// 			Text: fmt.Sprintf("/connect %d", CONNECTION_ID),
-	// 			From: FROM,
-	// 		},
-	// 	}
-	//
-	// 	got, err := createReply(update, store)
-	// 	assertNonErrorReply(t, got, want, err)
-	// })
-	//
-	// t.Run("INITIAL state, /connect message to non-existent user - should show an error", func(t *testing.T) {
-	// 	store := NewInMemoryStore()
-	// 	want := []types.ReplyDTO{
-	// 		{
-	// 			UserId: FROM.ID,
-	// 			Messages: []types.ReplyMessage{
-	// 				{
-	// 					Message:     MESSAGE_NO_SUCH_USER_IS_AWATING,
-	// 					ReplyMarkup: nil,
-	// 				},
-	// 			},
-	// 		},
-	// 	}
-	//
-	// 	update := types.TelegramUpdate{
-	// 		Message: types.Message{
-	// 			Text: "/connect 1337",
-	// 			From: FROM,
-	// 		},
-	// 	}
-	//
-	// 	got, err := createReply(update, store)
-	// 	assertNonErrorReply(t, got, want, err)
-	// })
-	//
-	// t.Run("INITIAL state, /connect message to existing user - should connect correctly", func(t *testing.T) {
-	// 	store := NewInMemoryStore()
-	// 	store.states[USER_ID] = &types.DialogState{
-	// 		State:        types.STATE_INITIAL,
-	// 		ConnectionId: &CONNECTION_ID,
-	// 	}
-	// 	store.connections[CONNECTION_ID] = USER_ID
-	//
-	// 	want := []types.ReplyDTO{
-	// 		{
-	// 			UserId: FROM_2.ID,
-	// 			Messages: []types.ReplyMessage{
-	// 				{
-	// 					Message:     MESSAGE_SELECT_YOUR_ROLE,
-	// 					ReplyMarkup: KEYBOARD_SELECT_YOUR_ROLE,
-	// 				},
-	// 			},
-	// 			NextState: &types.DialogState{
-	// 				State:      types.STATE_SELECT_YOUR_ROLE,
-	// 				OpponentId: &FROM.ID,
-	// 			},
-	// 		},
-	// 		{
-	// 			UserId: FROM.ID,
-	// 			Messages: []types.ReplyMessage{
-	// 				{
-	// 					Message:     MESSAGE_SELECT_YOUR_ROLE,
-	// 					ReplyMarkup: KEYBOARD_SELECT_YOUR_ROLE,
-	// 				},
-	// 			},
-	// 			NextState: &types.DialogState{
-	// 				State:      types.STATE_SELECT_YOUR_ROLE,
-	// 				OpponentId: &FROM_2.ID,
-	// 			},
-	// 		},
-	// 	}
-	//
-	// 	update := types.TelegramUpdate{
-	// 		Message: types.Message{
-	// 			Text: fmt.Sprintf("/connect %d", CONNECTION_ID),
-	// 			From: FROM_2,
-	// 		},
-	// 	}
-	//
-	// 	got, err := createReply(update, store)
-	// 	assertNonErrorReply(t, got, want, err)
-	// })
+	t.Run("INITIAL state, /connect message to yourself - should show an error", func(t *testing.T) {
+		store := NewInMemoryStore()
+		store.connections[CONNECTION_ID] = USER_ID
+
+		want := []types.ReplyDTO{
+			{
+				UserId: FROM.ID,
+				Messages: []types.ReplyMessage{
+					{
+						Message:     MESSAGE_YOU_CANT_CONNECT_TO_YOURSELF,
+						ReplyMarkup: nil,
+					},
+				},
+			},
+		}
+
+		update := types.TelegramUpdate{
+			Message: types.Message{
+				Text: fmt.Sprintf("/connect %d", CONNECTION_ID),
+				From: FROM,
+			},
+		}
+
+		got, err := createReply(update, store)
+		assertNonErrorReply(t, got, want, err)
+	})
+
+	t.Run("INITIAL state, /connect message to non-existent user - should show an error", func(t *testing.T) {
+		store := NewInMemoryStore()
+		want := []types.ReplyDTO{
+			{
+				UserId: FROM.ID,
+				Messages: []types.ReplyMessage{
+					{
+						Message:     MESSAGE_NO_SUCH_USER_IS_AWATING,
+						ReplyMarkup: nil,
+					},
+				},
+			},
+		}
+
+		update := types.TelegramUpdate{
+			Message: types.Message{
+				Text: "/connect 1337",
+				From: FROM,
+			},
+		}
+
+		got, err := createReply(update, store)
+		assertNonErrorReply(t, got, want, err)
+	})
+
+	t.Run("INITIAL state, /connect message to existing user - should connect correctly", func(t *testing.T) {
+		store := NewInMemoryStore()
+		sm := types.StateMachine{}
+		sm.SetState(&types.WaitingForConnectState{
+			ConnectionId: &CONNECTION_ID,
+		})
+		store.states[USER_ID] = &sm
+		store.connections[CONNECTION_ID] = USER_ID
+
+		var nextState1 types.State_NG = &types.SelectYourRoleState{
+			OpponentId: &FROM_2.ID,
+		}
+		var nextState2 types.State_NG = &types.SelectYourRoleState{
+			OpponentId: &FROM.ID,
+		}
+
+		want := []types.ReplyDTO{
+			{
+				UserId: FROM_2.ID,
+				Messages: []types.ReplyMessage{
+					{
+						Message:     MESSAGE_SELECT_YOUR_ROLE,
+						ReplyMarkup: KEYBOARD_SELECT_YOUR_ROLE,
+					},
+				},
+				NextState: &nextState2,
+			},
+			{
+				UserId: FROM.ID,
+				Messages: []types.ReplyMessage{
+					{
+						Message:     MESSAGE_SELECT_YOUR_ROLE,
+						ReplyMarkup: KEYBOARD_SELECT_YOUR_ROLE,
+					},
+				},
+				NextState: &nextState1,
+			},
+		}
+
+		update := types.TelegramUpdate{
+			Message: types.Message{
+				Text: fmt.Sprintf("/connect %d", CONNECTION_ID),
+				From: FROM_2,
+			},
+		}
+
+		got, err := createReply(update, store)
+		assertNonErrorReply(t, got, want, err)
+	})
 	//
 	// t.Run("WAITING state, - tells about waiting for connection", func(t *testing.T) {
 	// 	store := NewInMemoryStore()
