@@ -408,6 +408,48 @@ func TestCreateReply(t *testing.T) {
 		}
 		assertNonErrorReply(t, got, want, err)
 	})
+
+	t.Run("SELECT ROLE state - received text message - prompt for role again", func(t *testing.T) {
+		store := NewInMemoryStore()
+		sm1 := types.StateMachine{}
+		sm1.SetState(&types.SelectYourRoleState{
+			OpponentId: &USER_ID_2,
+		})
+		store.states[USER_ID] = &sm1
+
+		sm2 := types.StateMachine{}
+		sm2.SetState(&types.SelectYourRoleState{
+			OpponentId: &USER_ID,
+		})
+		store.states[USER_ID_2] = &sm2
+
+		want := []types.ReplyDTO{
+			{
+				UserId: FROM.ID,
+				Messages: []types.ReplyMessage{
+					{
+						Message:     MESSAGE_SELECT_YOUR_ROLE_UNEXPECTED,
+						ReplyMarkup: KEYBOARD_SELECT_YOUR_ROLE,
+					},
+				},
+			},
+		}
+
+		update := types.TelegramUpdate{
+			UpdateID: 1,
+			Message: types.Message{
+				MessageID: 1,
+				Text:      " some text ",
+				From:      FROM,
+			},
+		}
+
+		got, err := createReply(update, store)
+		if err != nil {
+			t.Errorf("shouldn't have error")
+		}
+		assertNonErrorReply(t, got, want, err)
+	})
 	//
 	// t.Run("SELECT LOWER BOUNDS state - show error message on invalid value", func(t *testing.T) {
 	// 	store := NewInMemoryStore()

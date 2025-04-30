@@ -16,7 +16,7 @@ const (
 	MESSAGE_NO_SUCH_USER_IS_AWATING      = "No such user is awaiting for connection"
 	MESSAGE_START_GUIDE                  = "To use this bot use:\n/start - to initiate negotitaion\n/connect <ID> - to connect to person\n/reset - to reset"
 	MESSAGE_SELECT_YOUR_ROLE_CONNECTED   = "You are connected!\nSelect your role"
-	MESSAGE_SELECT_YOUR_ROLE_UNEXPECTED  = "Not sure what happened...\nSelect your role"
+	MESSAGE_SELECT_YOUR_ROLE_UNEXPECTED  = "Not sure what happened...\nPlease, select your role"
 	MESSAGE_UNEXPECTED_STATE             = "Wow, I'm not sure how we ended up being here\nTry to reset with\n/reset"
 	MESSAGE_SELECT_SALARY_LOWER_BOUND    = "Select your lower salary bounds"
 	MESSAGE_SELECT_SALARY_UPPER_BOUND    = "Select your upper salary bounds"
