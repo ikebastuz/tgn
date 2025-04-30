@@ -189,7 +189,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 						UserId: userData.ID,
 						Messages: []types.ReplyMessage{
 							{
-								Message:     MESSAGE_SELECT_YOUR_ROLE,
+								Message:     MESSAGE_SELECT_YOUR_ROLE_CONNECTED,
 								ReplyMarkup: KEYBOARD_SELECT_YOUR_ROLE,
 							},
 						},
@@ -199,7 +199,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 						UserId: *targetUserId,
 						Messages: []types.ReplyMessage{
 							{
-								Message:     MESSAGE_SELECT_YOUR_ROLE,
+								Message:     MESSAGE_SELECT_YOUR_ROLE_CONNECTED,
 								ReplyMarkup: KEYBOARD_SELECT_YOUR_ROLE,
 							},
 						},
@@ -243,9 +243,21 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 		if update.CallbackQuery.Data == string(types.ROLE_EMPLOYEE) {
 			nextRole1 = types.ROLE_EMPLOYEE
 			nextRole2 = types.ROLE_EMPLOYER
-		} else {
+		} else if update.CallbackQuery.Data == string(types.ROLE_EMPLOYER) {
 			nextRole1 = types.ROLE_EMPLOYER
 			nextRole2 = types.ROLE_EMPLOYEE
+		} else {
+			return []types.ReplyDTO{
+				{
+					UserId: userData.ID,
+					Messages: []types.ReplyMessage{
+						{
+							Message:     MESSAGE_SELECT_YOUR_ROLE_UNEXPECTED,
+							ReplyMarkup: KEYBOARD_SELECT_YOUR_ROLE,
+						},
+					},
+				},
+			}, nil
 		}
 
 		var nextState1 types.State_NG = &types.SelectLowerBoundsState{
