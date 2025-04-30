@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	// "github.com/ikebastuz/tgn/actions"
+	"github.com/ikebastuz/tgn/actions"
 	"github.com/ikebastuz/tgn/types"
 )
 
@@ -199,7 +199,7 @@ func TestCreateReply(t *testing.T) {
 		sm.SetState(&types.WaitingForConnectState{
 			ConnectionId: &CONNECTION_ID,
 		})
-		store.states[*&FROM.ID] = &sm
+		store.states[FROM.ID] = &sm
 
 		var FROM = types.From{
 			ID:       int64(USER_ID),
@@ -235,61 +235,70 @@ func TestCreateReply(t *testing.T) {
 			t.Errorf("expected %v, got %v", want, got)
 		}
 	})
-	//
-	// t.Run("SELECT ROLE state - update both users and ask for lower bounds", func(t *testing.T) {
-	// 	store := NewInMemoryStore()
-	// 	store.SetDialogState(&USER_ID, types.DialogState{State: types.STATE_SELECT_YOUR_ROLE, OpponentId: &USER_ID_2})
-	// 	store.SetDialogState(&USER_ID_2, types.DialogState{State: types.STATE_SELECT_YOUR_ROLE, OpponentId: &USER_ID})
-	// 	want := []types.ReplyDTO{
-	// 		{
-	// 			UserId: FROM.ID,
-	// 			Messages: []types.ReplyMessage{
-	// 				{
-	// 					Message:     MESSAGE_SELECT_SALARY_LOWER_BOUND,
-	// 					ReplyMarkup: nil,
-	// 				},
-	// 			},
-	// 			NextState: &types.DialogState{
-	// 				State:      types.STATE_SELECT_LOWER_BOUNDS,
-	// 				OpponentId: &USER_ID_2,
-	// 			},
-	// 		},
-	// 		{
-	// 			UserId: FROM_2.ID,
-	// 			Messages: []types.ReplyMessage{
-	// 				{
-	// 					Message:     MESSAGE_SELECT_SALARY_LOWER_BOUND,
-	// 					ReplyMarkup: nil,
-	// 				},
-	// 			},
-	// 			NextState: &types.DialogState{
-	// 				State:      types.STATE_SELECT_LOWER_BOUNDS,
-	// 				OpponentId: &USER_ID,
-	// 			},
-	// 		},
-	// 	}
-	//
-	// 	update := types.TelegramUpdate{
-	// 		UpdateID: 1,
-	// 		CallbackQuery: types.CallbackQuery{
-	// 			Data: actions.ACTION_SELECT_EMPLOYEE,
-	// 		},
-	// 		Message: types.Message{
-	// 			MessageID: 1,
-	// 			Text:      "",
-	// 			From:      FROM,
-	// 		},
-	// 	}
-	//
-	// 	got, err := createReply(update, store)
-	// 	if err != nil {
-	// 		t.Errorf("shouldn't have error")
-	// 	}
-	//
-	// 	if !reflect.DeepEqual(got, want) {
-	// 		t.Errorf("expected %v, got %v", want, got)
-	// 	}
-	// })
+
+	t.Run("SELECT ROLE state - update both users and ask for lower bounds", func(t *testing.T) {
+		store := NewInMemoryStore()
+		sm1 := types.StateMachine{}
+		sm1.SetState(&types.SelectYourRoleState{
+			OpponentId: &USER_ID_2,
+		})
+		store.states[USER_ID] = &sm1
+
+		sm2 := types.StateMachine{}
+		sm2.SetState(&types.SelectYourRoleState{
+			OpponentId: &USER_ID,
+		})
+		store.states[USER_ID_2] = &sm2
+
+		var nextState1 types.State_NG = &types.SelectLowerBoundsState{
+			OpponentId: &USER_ID_2,
+			Role:       types.ROLE_EMPLOYEE,
+		}
+		var nextState2 types.State_NG = &types.SelectLowerBoundsState{
+			OpponentId: &USER_ID,
+			Role:       types.ROLE_EMPLOYER,
+		}
+		want := []types.ReplyDTO{
+			{
+				UserId: FROM.ID,
+				Messages: []types.ReplyMessage{
+					{
+						Message:     MESSAGE_SELECT_SALARY_LOWER_BOUND,
+						ReplyMarkup: nil,
+					},
+				},
+				NextState: &nextState1,
+			},
+			{
+				UserId: FROM_2.ID,
+				Messages: []types.ReplyMessage{
+					{
+						Message:     MESSAGE_SELECT_SALARY_LOWER_BOUND,
+						ReplyMarkup: nil,
+					},
+				},
+				NextState: &nextState2,
+			},
+		}
+
+		update := types.TelegramUpdate{
+			UpdateID: 1,
+			CallbackQuery: types.CallbackQuery{
+				Data: actions.ACTION_SELECT_EMPLOYEE,
+			},
+			Message: types.Message{
+				MessageID: 1,
+				Text:      "",
+				From:      FROM,
+			},
+		}
+
+		got, err := createReply(update, store)
+		if err != nil {
+			t.Errorf("shouldn't have error")
+		}
+		assertNonErrorReply(t, got, want, err)
+	})
 	//
 	// t.Run("SELECT LOWER BOUNDS state - show error message on invalid value", func(t *testing.T) {
 	// 	store := NewInMemoryStore()

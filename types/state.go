@@ -78,7 +78,7 @@ func (s *SelectYourRoleState) GetState() StateType {
 
 type SelectLowerBoundsState struct {
 	OpponentId *int64
-	Role       *Role
+	Role       Role
 }
 
 func (s *SelectLowerBoundsState) GetState() StateType {

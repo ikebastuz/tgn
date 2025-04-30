@@ -237,13 +237,24 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 		}, nil
 
 	case *types.SelectYourRoleState:
-		opponentId := s.OpponentId
+		var nextRole1 types.Role
+		var nextRole2 types.Role
+
+		if update.CallbackQuery.Data == string(types.ROLE_EMPLOYEE) {
+			nextRole1 = types.ROLE_EMPLOYEE
+			nextRole2 = types.ROLE_EMPLOYER
+		} else {
+			nextRole1 = types.ROLE_EMPLOYER
+			nextRole2 = types.ROLE_EMPLOYEE
+		}
 
 		var nextState1 types.State_NG = &types.SelectLowerBoundsState{
-			OpponentId: opponentId,
+			OpponentId: s.OpponentId,
+			Role:       nextRole1,
 		}
 		var nextState2 types.State_NG = &types.SelectLowerBoundsState{
 			OpponentId: &userData.ID,
+			Role:       nextRole2,
 		}
 		return []types.ReplyDTO{
 			{
@@ -257,7 +268,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 				NextState: &nextState1,
 			},
 			{
-				UserId: *opponentId,
+				UserId: *s.OpponentId,
 				Messages: []types.ReplyMessage{
 					{
 						Message:     MESSAGE_SELECT_SALARY_LOWER_BOUND,
