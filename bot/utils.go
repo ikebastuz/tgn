@@ -16,6 +16,10 @@ func createConnectionMessage(userName string, connectionId int64) string {
 	return fmt.Sprintf(MESSAGE_FORWARD_CONNECTION_01, userName, connectionId)
 }
 
+func createResultMessage(salary int64) string {
+	return fmt.Sprintf(MESSAGE_RESULT, salary)
+}
+
 func getUserData(update types.TelegramUpdate) (*types.From, error) {
 	if update.CallbackQuery.From.ID > 0 {
 		return &update.CallbackQuery.From, nil

@@ -75,7 +75,7 @@ func TestEvaluator(t *testing.T) {
 	})
 }
 
-func assertCorrectChoice(t testing.TB, employee, employer Range, salary int) {
+func assertCorrectChoice(t testing.TB, employee, employer Range, salary int64) {
 	if salary < employee.Min {
 		t.Errorf("salary of %d is less than employee Min of %d", salary, employee.Min)
 	}
@@ -84,7 +84,7 @@ func assertCorrectChoice(t testing.TB, employee, employer Range, salary int) {
 	}
 }
 
-func assertExactValue(t testing.TB, got, want int) {
+func assertExactValue(t testing.TB, got, want int64) {
 	if got != want {
 		t.Errorf("expected %v, got %v", want, got)
 	}

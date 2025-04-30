@@ -94,6 +94,7 @@ type ResultState struct {
 	Role       Role
 	LowerBound *int64
 	UpperBound *int64
+	Result     *int64
 }
 
 func (s *ResultState) GetState() StateType {

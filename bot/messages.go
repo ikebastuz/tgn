@@ -22,4 +22,5 @@ const (
 	MESSAGE_SELECT_SALARY_UPPER_BOUND    = "Select your upper salary bounds"
 	MESSAGE_WAITING_FOR_RESULT           = "Waiting for result..."
 	MESSAGE_USE_VALID_POSITIVE_NUMBER    = "Use valid positive number"
+	MESSAGE_RESULT                       = "Congratulations. You can agree on the amount of: %d"
 )

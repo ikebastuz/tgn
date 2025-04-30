@@ -7,6 +7,7 @@ import (
 
 	"github.com/gotd/td/telegram"
 	"github.com/gotd/td/tg"
+	"github.com/ikebastuz/tgn/solver"
 	"github.com/ikebastuz/tgn/types"
 )
 
@@ -90,6 +91,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 		return response, nil
 	}
 
+	log.Infof("CURRENT STATE: %v", sm.GetState().GetState())
 	switch s := sm.GetState().(type) {
 	case *types.InitialState:
 		incomingConnectionId, isConnectionMessage := getConnectionId(&update)
@@ -326,9 +328,55 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 			}, nil
 		} else {
 			opponentState := store.GetDialogState(s.OpponentId)
-			switch opponentState.GetState().(type) {
+			switch os := opponentState.GetState().(type) {
 			case *types.WaitingForResultState:
-				return []types.ReplyDTO{}, nil
+				var employeeRange solver.Range
+				var employerRange solver.Range
+
+				if s.Role == types.ROLE_EMPLOYEE {
+					employeeRange = solver.Range{
+						Min: *s.LowerBound,
+						Max: upper_bound,
+					}
+					employerRange = solver.Range{
+						Min: *os.LowerBound,
+						Max: *os.UpperBound,
+					}
+				} else if s.Role == types.ROLE_EMPLOYER {
+					employerRange = solver.Range{
+						Min: *s.LowerBound,
+						Max: upper_bound,
+					}
+					employeeRange = solver.Range{
+						Min: *os.LowerBound,
+						Max: *os.UpperBound,
+					}
+				}
+
+				salary, err := solver.Solve(employeeRange, employerRange)
+				if err != nil {
+					// TODO handle retry
+				}
+				var nextState types.State = &types.ResultState{
+					OpponentId: s.OpponentId,
+					Role:       s.Role,
+					LowerBound: s.LowerBound,
+					UpperBound: &upper_bound,
+					Result:     &salary,
+				}
+
+				return []types.ReplyDTO{
+					{
+						UserId: userData.ID,
+						Messages: []types.ReplyMessage{
+							{
+								Message:     createResultMessage(salary),
+								ReplyMarkup: nil,
+							},
+						},
+						NextState: &nextState,
+					},
+				}, nil
 			default:
 				var nextState types.State = &types.WaitingForResultState{
 					OpponentId: s.OpponentId,

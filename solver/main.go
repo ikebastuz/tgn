@@ -6,15 +6,15 @@ import (
 )
 
 type Range struct {
-	Min int
-	Max int
+	Min int64
+	Max int64
 }
 
 var (
 	ErrRangesDoNotOverlap = errors.New("ranges do not overlap")
 )
 
-func Solve(employee, employer Range) (int, error) {
+func Solve(employee, employer Range) (int64, error) {
 	if employer.Max < employee.Min {
 		return 0, ErrRangesDoNotOverlap
 	}
@@ -34,19 +34,19 @@ func Solve(employee, employer Range) (int, error) {
 	min := Max(employee.Min, employer.Min)
 	max := Min(employee.Max, employer.Max)
 
-	salary := rand.Intn(max-min+1) + min
+	salary := rand.Int63n(max-min+1) + min
 
 	return salary, nil
 }
 
-func Min(a, b int) int {
+func Min(a, b int64) int64 {
 	if a < b {
 		return a
 	}
 	return b
 }
 
-func Max(a, b int) int {
+func Max(a, b int64) int64 {
 	if a > b {
 		return a
 	}
