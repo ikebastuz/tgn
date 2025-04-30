@@ -35,6 +35,7 @@ const (
 	STATE_SELECT_LOWER_BOUNDS_NG StateType = "select-lower-bounds"
 	STATE_SELECT_UPPER_BOUNDS_NG StateType = "select-upper-bounds"
 	STATE_RESULT_NG              StateType = "result"
+	STATE_UNEXPECTED             StateType = "unexpected"
 )
 
 const (
@@ -104,4 +105,10 @@ type ResultState struct {
 
 func (s *ResultState) GetState() StateType {
 	return STATE_RESULT_NG
+}
+
+type UnexpectedState struct{}
+
+func (s *UnexpectedState) GetState() StateType {
+	return STATE_UNEXPECTED
 }
