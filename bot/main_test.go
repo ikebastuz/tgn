@@ -666,15 +666,19 @@ func TestCreateReply(t *testing.T) {
 		sm2 := types.StateMachine{}
 		sm2.SetState(&types.WaitingForResultState{
 			OpponentId: &USER_ID_2,
-			Role:       types.ROLE_EMPLOYEE,
+			Role:       types.ROLE_EMPLOYER,
 			LowerBound: &lower_bound2,
 			UpperBound: &upper_bound2,
 		})
 		store.states[USER_ID_2] = &sm2
 
-		var nextState types.State = &types.ResultErrorState{
+		var nextState1 types.State = &types.ResultErrorState{
 			OpponentId: &USER_ID_2,
 			Role:       types.ROLE_EMPLOYEE,
+		}
+		var nextState2 types.State = &types.ResultErrorState{
+			OpponentId: &USER_ID,
+			Role:       types.ROLE_EMPLOYER,
 		}
 		want := []types.ReplyDTO{
 			{
@@ -685,7 +689,17 @@ func TestCreateReply(t *testing.T) {
 						ReplyMarkup: KEYBOARD_SELECT_YES_NO,
 					},
 				},
-				NextState: &nextState,
+				NextState: &nextState1,
+			},
+			{
+				UserId: FROM_2.ID,
+				Messages: []types.ReplyMessage{
+					{
+						Message:     MESSAGE_RESULT_ERROR,
+						ReplyMarkup: KEYBOARD_SELECT_YES_NO,
+					},
+				},
+				NextState: &nextState2,
 			},
 		}
 
