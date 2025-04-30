@@ -2,11 +2,13 @@ package bot
 
 import (
 	"context"
-	log "github.com/sirupsen/logrus"
 	"math/rand"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/gotd/td/telegram"
 	"github.com/gotd/td/tg"
+	"github.com/ikebastuz/tgn/actions"
 	"github.com/ikebastuz/tgn/solver"
 	"github.com/ikebastuz/tgn/types"
 )
@@ -227,10 +229,10 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 		var nextRole1 types.Role
 		var nextRole2 types.Role
 
-		if update.CallbackQuery.Data == string(types.ROLE_EMPLOYEE) {
+		if update.CallbackQuery.Data == actions.ACTION_SELECT_EMPLOYEE {
 			nextRole1 = types.ROLE_EMPLOYEE
 			nextRole2 = types.ROLE_EMPLOYER
-		} else if update.CallbackQuery.Data == string(types.ROLE_EMPLOYER) {
+		} else if update.CallbackQuery.Data == actions.ACTION_SELECT_EMPLOYER {
 			nextRole1 = types.ROLE_EMPLOYER
 			nextRole2 = types.ROLE_EMPLOYEE
 		} else {
@@ -452,6 +454,36 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 				NextState: &nextState,
 			},
 		}, nil
+	case *types.ResultErrorState:
+		if update.CallbackQuery.Data == actions.ACTION_SELECT_NO {
+			var nextState types.State = &types.InitialState{}
+			return []types.ReplyDTO{
+				{
+					UserId: userData.ID,
+					Messages: []types.ReplyMessage{
+						{
+							Message:     MESSAGE_START_GUIDE,
+							ReplyMarkup: nil,
+						},
+					},
+					NextState: &nextState,
+				},
+				{
+					UserId: *s.OpponentId,
+					Messages: []types.ReplyMessage{
+						{
+							Message:     MESSAGE_START_GUIDE,
+							ReplyMarkup: nil,
+						},
+					},
+					NextState: &nextState,
+				},
+			}, nil
+		} else if update.CallbackQuery.Data == actions.ACTION_SELECT_YES {
+			return []types.ReplyDTO{}, nil
+		} else {
+			return []types.ReplyDTO{}, nil
+		}
 	default:
 		return []types.ReplyDTO{
 			{

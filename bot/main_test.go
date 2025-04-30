@@ -745,6 +745,64 @@ func TestCreateReply(t *testing.T) {
 		assertNonErrorReply(t, got, want, err)
 	})
 
+	t.Run("RESULT Error state - Selected No - Set both to initial state", func(t *testing.T) {
+		store := NewInMemoryStore()
+
+		sm1 := types.StateMachine{}
+		sm1.SetState(&types.ResultErrorState{
+			OpponentId: &USER_ID_2,
+			Role:       types.ROLE_EMPLOYEE,
+		})
+		store.states[USER_ID] = &sm1
+
+		sm2 := types.StateMachine{}
+		sm2.SetState(&types.ResultErrorState{
+			OpponentId: &USER_ID,
+			Role:       types.ROLE_EMPLOYEE,
+		})
+		store.states[USER_ID_2] = &sm2
+
+		var nextState types.State = &types.InitialState{}
+
+		want := []types.ReplyDTO{
+			{
+				UserId: FROM.ID,
+				Messages: []types.ReplyMessage{
+					{
+						Message:     MESSAGE_START_GUIDE,
+						ReplyMarkup: nil,
+					},
+				},
+				NextState: &nextState,
+			},
+			{
+				UserId: USER_ID_2,
+				Messages: []types.ReplyMessage{
+					{
+						Message:     MESSAGE_START_GUIDE,
+						ReplyMarkup: nil,
+					},
+				},
+				NextState: &nextState,
+			},
+		}
+
+		update := types.TelegramUpdate{
+			UpdateID: 1,
+			Message: types.Message{
+				MessageID: 1,
+				Text:      "anything",
+				From:      FROM,
+			},
+			CallbackQuery: types.CallbackQuery{
+				Data: actions.ACTION_SELECT_NO,
+			},
+		}
+
+		got, err := createReply(update, store)
+		assertNonErrorReply(t, got, want, err)
+	})
+
 	t.Run("ANY state with /reset - should set to initial state", func(t *testing.T) {
 		store := NewInMemoryStore()
 		sm1 := types.StateMachine{}
