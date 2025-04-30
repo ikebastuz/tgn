@@ -539,10 +539,10 @@ func TestCreateReply(t *testing.T) {
 		sm2 := types.StateMachine{}
 		sm2.SetState(&types.SelectUpperBoundsState{
 			OpponentId: &USER_ID_2,
-			Role:       types.ROLE_EMPLOYEE,
+			Role:       types.ROLE_EMPLOYER,
 			LowerBound: &lower_bound,
 		})
-		store.states[USER_ID] = &sm2
+		store.states[USER_ID_2] = &sm2
 
 		var nextState types.State = &types.WaitingForResultState{
 			OpponentId: &USER_ID_2,
@@ -591,16 +591,23 @@ func TestCreateReply(t *testing.T) {
 
 		sm2 := types.StateMachine{}
 		sm2.SetState(&types.WaitingForResultState{
-			OpponentId: &USER_ID_2,
-			Role:       types.ROLE_EMPLOYEE,
+			OpponentId: &USER_ID,
+			Role:       types.ROLE_EMPLOYER,
 			LowerBound: &lower_bound,
 			UpperBound: &upper_bound,
 		})
 		store.states[USER_ID_2] = &sm2
 
-		var nextState types.State = &types.ResultSuccessState{
+		var nextState1 types.State = &types.ResultSuccessState{
 			OpponentId: &USER_ID_2,
 			Role:       types.ROLE_EMPLOYEE,
+			LowerBound: &lower_bound,
+			UpperBound: &lower_bound,
+			Result:     &upper_bound,
+		}
+		var nextState2 types.State = &types.ResultSuccessState{
+			OpponentId: &USER_ID,
+			Role:       types.ROLE_EMPLOYER,
 			LowerBound: &lower_bound,
 			UpperBound: &lower_bound,
 			Result:     &upper_bound,
@@ -614,7 +621,17 @@ func TestCreateReply(t *testing.T) {
 						ReplyMarkup: nil,
 					},
 				},
-				NextState: &nextState,
+				NextState: &nextState1,
+			},
+			{
+				UserId: FROM_2.ID,
+				Messages: []types.ReplyMessage{
+					{
+						Message:     createResultMessage(upper_bound),
+						ReplyMarkup: nil,
+					},
+				},
+				NextState: &nextState2,
 			},
 		}
 
