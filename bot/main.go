@@ -308,7 +308,8 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 			}, nil
 		} else {
 			var nextState types.State_NG = &types.SelectUpperBoundsState{
-				OpponentId: &userData.ID,
+				OpponentId: s.OpponentId,
+				Role:       s.Role,
 				LowerBound: &lower_bound,
 			}
 			return []types.ReplyDTO{

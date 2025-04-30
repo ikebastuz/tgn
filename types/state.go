@@ -87,7 +87,7 @@ func (s *SelectLowerBoundsState) GetState() StateType {
 
 type SelectUpperBoundsState struct {
 	OpponentId *int64
-	Role       *Role
+	Role       Role
 	LowerBound *int64
 }
 
@@ -97,7 +97,7 @@ func (s *SelectUpperBoundsState) GetState() StateType {
 
 type ResultState struct {
 	OpponentId *int64
-	Role       *Role
+	Role       Role
 	LowerBound *int64
 	UpperBound *int64
 }

@@ -451,67 +451,79 @@ func TestCreateReply(t *testing.T) {
 		assertNonErrorReply(t, got, want, err)
 	})
 	//
-	// t.Run("SELECT LOWER BOUNDS state - show error message on invalid value", func(t *testing.T) {
-	// 	store := NewInMemoryStore()
-	// 	store.SetDialogState(&USER_ID, types.DialogState{State: types.STATE_SELECT_LOWER_BOUNDS, OpponentId: &USER_ID_2})
-	// 	want := []types.ReplyDTO{
-	// 		{
-	// 			UserId: FROM.ID,
-	// 			Messages: []types.ReplyMessage{
-	// 				{
-	// 					Message:     MESSAGE_USE_VALID_POSITIVE_NUMBER,
-	// 					ReplyMarkup: nil,
-	// 				},
-	// 			},
-	// 		},
-	// 	}
-	//
-	// 	update := types.TelegramUpdate{
-	// 		UpdateID: 1,
-	// 		Message: types.Message{
-	// 			MessageID: 1,
-	// 			Text:      "qweasd",
-	// 			From:      FROM,
-	// 		},
-	// 	}
-	//
-	// 	got, err := createReply(update, store)
-	// 	assertNonErrorReply(t, got, want, err)
-	// })
-	//
-	// t.Run("SELECT LOWER BOUNDS state - proceed further to upper bounds state if number is correct", func(t *testing.T) {
-	// 	var lower_bound int64 = 100500
-	// 	store := NewInMemoryStore()
-	// 	store.SetDialogState(&USER_ID, types.DialogState{State: types.STATE_SELECT_LOWER_BOUNDS, OpponentId: &USER_ID_2})
-	// 	want := []types.ReplyDTO{
-	// 		{
-	// 			UserId: FROM.ID,
-	// 			Messages: []types.ReplyMessage{
-	// 				{
-	// 					Message:     MESSAGE_SELECT_SALARY_UPPER_BOUND,
-	// 					ReplyMarkup: nil,
-	// 				},
-	// 			},
-	// 			NextState: &types.DialogState{
-	// 				State:      types.STATE_SELECT_UPPER_BOUNDS,
-	// 				OpponentId: &USER_ID_2,
-	// 				LowerBound: &lower_bound,
-	// 			},
-	// 		},
-	// 	}
-	//
-	// 	update := types.TelegramUpdate{
-	// 		UpdateID: 1,
-	// 		Message: types.Message{
-	// 			MessageID: 1,
-	// 			Text:      fmt.Sprintf("%d", lower_bound),
-	// 			From:      FROM,
-	// 		},
-	// 	}
-	//
-	// 	got, err := createReply(update, store)
-	// 	assertNonErrorReply(t, got, want, err)
-	// })
+	t.Run("SELECT LOWER BOUNDS state - show error message on invalid value", func(t *testing.T) {
+		store := NewInMemoryStore()
+		sm := types.StateMachine{}
+		sm.SetState(&types.SelectLowerBoundsState{
+			OpponentId: &FROM_2.ID,
+			Role:       types.ROLE_EMPLOYEE,
+		})
+		store.states[USER_ID] = &sm
+		want := []types.ReplyDTO{
+			{
+				UserId: FROM.ID,
+				Messages: []types.ReplyMessage{
+					{
+						Message:     MESSAGE_USE_VALID_POSITIVE_NUMBER,
+						ReplyMarkup: nil,
+					},
+				},
+			},
+		}
+
+		update := types.TelegramUpdate{
+			UpdateID: 1,
+			Message: types.Message{
+				MessageID: 1,
+				Text:      "qweasd",
+				From:      FROM,
+			},
+		}
+
+		got, err := createReply(update, store)
+		assertNonErrorReply(t, got, want, err)
+	})
+
+	t.Run("SELECT LOWER BOUNDS state - proceed further to upper bounds state if number is correct", func(t *testing.T) {
+		var lower_bound int64 = 100500
+		store := NewInMemoryStore()
+		sm := types.StateMachine{}
+		sm.SetState(&types.SelectLowerBoundsState{
+			OpponentId: &USER_ID_2,
+			Role:       types.ROLE_EMPLOYEE, // TODO: make it required
+		})
+		store.states[USER_ID] = &sm
+
+		var nextState types.State_NG = &types.SelectUpperBoundsState{
+			OpponentId: &USER_ID_2,
+			Role:       types.ROLE_EMPLOYEE,
+			LowerBound: &lower_bound,
+		}
+		want := []types.ReplyDTO{
+			{
+				UserId: FROM.ID,
+				Messages: []types.ReplyMessage{
+					{
+						Message:     MESSAGE_SELECT_SALARY_UPPER_BOUND,
+						ReplyMarkup: nil,
+					},
+				},
+				NextState: &nextState,
+			},
+		}
+
+		update := types.TelegramUpdate{
+			UpdateID: 1,
+			Message: types.Message{
+				MessageID: 1,
+				Text:      fmt.Sprintf("%d", lower_bound),
+				From:      FROM,
+			},
+		}
+
+		got, err := createReply(update, store)
+		assertNonErrorReply(t, got, want, err)
+	})
 	//
 	// // TODO: cover case when opponentId != null
 	// t.Run("ANY state with /reset - should set to initial state", func(t *testing.T) {
