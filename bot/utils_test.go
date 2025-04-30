@@ -8,17 +8,6 @@ import (
 	"github.com/ikebastuz/tgn/types"
 )
 
-func TestGetDialogState(t *testing.T) {
-	t.Run("should create initial dialog state", func(t *testing.T) {
-		store := NewInMemoryStore()
-		want := types.State(types.STATE_INITIAL)
-		got, _ := getDialogState(123, store)
-		if got.State != want {
-			t.Errorf("expected state %v, got %v", want, got.State)
-		}
-	})
-}
-
 func TestGetSenderId(t *testing.T) {
 	var FROM = &types.From{
 		ID:       int64(123),

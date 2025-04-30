@@ -59,7 +59,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 		return nil, err
 	}
 
-	dialogState, err := getDialogState(userData.ID, store)
+	sm, err := getDialogState(userData.ID, store)
 	if err != nil {
 		return nil, err
 	}
@@ -83,13 +83,15 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 				},
 			},
 		}
-		opponentId := dialogState.OpponentId
-		if opponentId != nil {
-			log.Infof("Resetting opponent %d state aswell", *opponentId)
+		switch s := sm.GetState().(type) {
+		case *types.SelectUpperBoundsState:
+		case *types.SelectLowerBoundsState:
+		case *types.SelectYourRoleState:
+			log.Infof("Resetting opponent %d state aswell", *s.OpponentId)
 
-			store.ResetUserState(opponentId)
+			store.ResetUserState(s.OpponentId)
 			response = append(response, types.ReplyDTO{
-				UserId: *opponentId,
+				UserId: *s.OpponentId,
 				Messages: []types.ReplyMessage{
 					{
 						Message:     MESSAGE_START_GUIDE,
@@ -98,14 +100,11 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 				},
 			})
 		}
-
 		return response, nil
 	}
 
-	log.Infof("User state is %s", dialogState.State)
-
-	switch dialogState.State {
-	case types.STATE_INITIAL:
+	switch s := sm.GetState().(type) {
+	case *types.InitialState:
 		incomingConnectionId, isConnectionMessage := getConnectionId(&update)
 
 		if isStartMessage(&update) {
@@ -115,9 +114,9 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 			// TODO: check if not connection exists
 			newConnectionId := store.CreateConnectionId(&userData.ID)
 
-			nextState := *dialogState
-			nextState.State = types.STATE_WAITING_FOR_CONNECT
-			nextState.ConnectionId = &newConnectionId
+			var nextState types.State_NG = &types.WaitingForConnectState{
+				ConnectionId: &newConnectionId,
+			}
 
 			return []types.ReplyDTO{
 				{
@@ -179,13 +178,12 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 					log.Warnf("No connection %d to delete", incomingConnectionId)
 				}
 
-				nextState1 := *dialogState
-				nextState1.State = types.STATE_SELECT_YOUR_ROLE
-				nextState1.OpponentId = targetUserId
-
-				nextState2 := *store.GetDialogState(targetUserId)
-				nextState2.State = types.STATE_SELECT_YOUR_ROLE
-				nextState2.OpponentId = &userData.ID
+				var nextState1 types.State_NG = &types.SelectYourRoleState{
+					OpponentId: targetUserId,
+				}
+				var nextState2 types.State_NG = &types.SelectYourRoleState{
+					OpponentId: &userData.ID,
+				}
 				return []types.ReplyDTO{
 					{
 						UserId: userData.ID,
@@ -225,7 +223,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 			}, nil
 		}
 
-	case types.STATE_WAITING_FOR_CONNECT:
+	case *types.WaitingForConnectState:
 		return []types.ReplyDTO{
 			{
 				UserId: userData.ID,
@@ -238,14 +236,15 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 			},
 		}, nil
 
-	case types.STATE_SELECT_YOUR_ROLE:
-		opponentId := dialogState.OpponentId
+	case *types.SelectYourRoleState:
+		opponentId := s.OpponentId
 
-		nextState1 := *dialogState
-		nextState1.State = types.STATE_SELECT_LOWER_BOUNDS
-
-		nextState2 := *store.GetDialogState(opponentId)
-		nextState2.State = types.STATE_SELECT_LOWER_BOUNDS
+		var nextState1 types.State_NG = &types.SelectLowerBoundsState{
+			OpponentId: opponentId,
+		}
+		var nextState2 types.State_NG = &types.SelectLowerBoundsState{
+			OpponentId: &userData.ID,
+		}
 		return []types.ReplyDTO{
 			{
 				UserId: userData.ID,
@@ -269,7 +268,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 			},
 		}, nil
 
-	case types.STATE_SELECT_LOWER_BOUNDS:
+	case *types.SelectLowerBoundsState:
 		lower_bound, err := parseSalary(update.Message.Text)
 
 		if err != nil {
@@ -285,10 +284,10 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 				},
 			}, nil
 		} else {
-			nextState := dialogState
-			nextState.State = types.STATE_SELECT_UPPER_BOUNDS
-			nextState.LowerBound = &lower_bound
-
+			var nextState types.State_NG = &types.SelectUpperBoundsState{
+				OpponentId: &userData.ID,
+				LowerBound: &lower_bound,
+			}
 			return []types.ReplyDTO{
 				{
 					UserId: userData.ID,
@@ -298,7 +297,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 							ReplyMarkup: nil,
 						},
 					},
-					NextState: nextState,
+					NextState: &nextState,
 				},
 			}, nil
 		}

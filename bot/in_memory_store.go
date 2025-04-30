@@ -8,38 +8,47 @@ import (
 )
 
 type InMemoryStore struct {
-	states      map[int64]*types.DialogState
+	states      map[int64]*types.StateMachine
 	connections map[int64]int64
 }
 
-var DEFAULT_DIALOG_STATE = types.DialogState{
-	State: types.STATE_INITIAL,
-}
+var DEFAULT_DIALOG_STATE = types.InitialState{}
 
 func NewInMemoryStore() *InMemoryStore {
 	return &InMemoryStore{
-		states:      make(map[int64]*types.DialogState),
+		states:      make(map[int64]*types.StateMachine),
 		connections: make(map[int64]int64),
 	}
 }
 
-func (s *InMemoryStore) GetDialogState(userId *int64) *types.DialogState {
-	if state, exists := s.states[*userId]; exists {
-		return state
+func (s *InMemoryStore) GetDialogState(userId *int64) *types.StateMachine {
+	if sm, exists := s.states[*userId]; exists {
+		return sm
 	}
-	s.states[*userId] = &DEFAULT_DIALOG_STATE
+	sm := &types.StateMachine{}
+	sm.SetState(&DEFAULT_DIALOG_STATE)
+	s.states[*userId] = sm
 
-	return &DEFAULT_DIALOG_STATE
+	return sm
 }
 
-func (s *InMemoryStore) SetDialogState(userId *int64, state types.DialogState) {
-	s.states[*userId] = &state
+func (s *InMemoryStore) SetDialogState(userId *int64, state types.State_NG) {
+	if sm, exists := s.states[*userId]; exists {
+		sm.SetState(state)
+		return
+	}
+
+	sm := &types.StateMachine{}
+	sm.SetState(state)
+	s.states[*userId] = sm
 }
 
 func (s *InMemoryStore) CreateConnectionId(userId *int64) int64 {
 	// Check if connection exists
-	if state, exists := s.states[*userId]; exists {
-		if state.ConnectionId != nil {
+	if sm, exists := s.states[*userId]; exists {
+		s := sm.GetState()
+		switch state := s.(type) {
+		case *types.WaitingForConnectState:
 			return *state.ConnectionId
 		}
 	}
@@ -52,10 +61,6 @@ func (s *InMemoryStore) CreateConnectionId(userId *int64) int64 {
 		}
 	}
 	s.connections[id] = *userId
-
-	currentState := s.states[*userId]
-	currentState.ConnectionId = &id
-
 	return id
 }
 
@@ -74,17 +79,12 @@ func (s *InMemoryStore) DeleteConnectionId(connectionId *int64) error {
 		delete(s.connections, *connectionId)
 	}
 
-	for _, state := range s.states {
-		if state.ConnectionId != nil && *state.ConnectionId == *connectionId {
-			state.ConnectionId = nil
-		}
-	}
-
 	return nil
 }
 
 func (s *InMemoryStore) ResetUserState(userId *int64) error {
-	s.states[*userId] = &DEFAULT_DIALOG_STATE
+	sm := s.states[*userId]
+	sm.SetState(&DEFAULT_DIALOG_STATE)
 
 	for connectionId, targetUserId := range s.connections {
 		if targetUserId == *userId {
