@@ -209,7 +209,6 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 				},
 			}, nil
 		}
-
 	case *types.WaitingForConnectState:
 		return []types.ReplyDTO{
 			{
@@ -222,7 +221,6 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 				},
 			},
 		}, nil
-
 	case *types.SelectYourRoleState:
 		var nextRole1 types.Role
 		var nextRole2 types.Role
@@ -277,7 +275,6 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 				NextState: &nextState2,
 			},
 		}, nil
-
 	case *types.SelectLowerBoundsState:
 		lower_bound, err := parseSalary(update.Message.Text)
 
@@ -311,6 +308,47 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 					NextState: &nextState,
 				},
 			}, nil
+		}
+	case *types.SelectUpperBoundsState:
+		upper_bound, err := parseSalary(update.Message.Text)
+
+		if err != nil {
+			return []types.ReplyDTO{
+				{
+					UserId: userData.ID,
+					Messages: []types.ReplyMessage{
+						{
+							Message:     MESSAGE_USE_VALID_POSITIVE_NUMBER,
+							ReplyMarkup: nil,
+						},
+					},
+				},
+			}, nil
+		} else {
+			opponentState := store.GetDialogState(s.OpponentId)
+			switch opponentState.GetState().(type) {
+			case *types.WaitingForResultState:
+				return []types.ReplyDTO{}, nil
+			default:
+				var nextState types.State = &types.WaitingForResultState{
+					OpponentId: s.OpponentId,
+					Role:       s.Role,
+					LowerBound: s.LowerBound,
+					UpperBound: &upper_bound,
+				}
+				return []types.ReplyDTO{
+					{
+						UserId: userData.ID,
+						Messages: []types.ReplyMessage{
+							{
+								Message:     MESSAGE_WAITING_FOR_RESULT,
+								ReplyMarkup: nil,
+							},
+						},
+						NextState: &nextState,
+					},
+				}, nil
+			}
 		}
 
 	default:

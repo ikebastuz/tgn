@@ -523,6 +523,59 @@ func TestCreateReply(t *testing.T) {
 		assertNonErrorReply(t, got, want, err)
 	})
 
+	t.Run("SELECT UPPER BOUNDS state - Opponent is still selecting - Waiting for result state", func(t *testing.T) {
+		var lower_bound int64 = 100500
+		var upper_bound int64 = 100500
+		store := NewInMemoryStore()
+
+		sm1 := types.StateMachine{}
+		sm1.SetState(&types.SelectUpperBoundsState{
+			OpponentId: &USER_ID_2,
+			Role:       types.ROLE_EMPLOYEE,
+			LowerBound: &lower_bound,
+		})
+		store.states[USER_ID] = &sm1
+
+		sm2 := types.StateMachine{}
+		sm2.SetState(&types.SelectUpperBoundsState{
+			OpponentId: &USER_ID_2,
+			Role:       types.ROLE_EMPLOYEE,
+			LowerBound: &lower_bound,
+		})
+		store.states[USER_ID] = &sm2
+
+		var nextState types.State = &types.WaitingForResultState{
+			OpponentId: &USER_ID_2,
+			Role:       types.ROLE_EMPLOYEE,
+			LowerBound: &lower_bound,
+			UpperBound: &lower_bound,
+		}
+		want := []types.ReplyDTO{
+			{
+				UserId: FROM.ID,
+				Messages: []types.ReplyMessage{
+					{
+						Message:     MESSAGE_WAITING_FOR_RESULT,
+						ReplyMarkup: nil,
+					},
+				},
+				NextState: &nextState,
+			},
+		}
+
+		update := types.TelegramUpdate{
+			UpdateID: 1,
+			Message: types.Message{
+				MessageID: 1,
+				Text:      fmt.Sprintf("%d", upper_bound),
+				From:      FROM,
+			},
+		}
+
+		got, err := createReply(update, store)
+		assertNonErrorReply(t, got, want, err)
+	})
+
 	t.Run("ANY state with /reset - should set to initial state", func(t *testing.T) {
 		store := NewInMemoryStore()
 		sm1 := types.StateMachine{}
