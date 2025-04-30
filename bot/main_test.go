@@ -702,6 +702,49 @@ func TestCreateReply(t *testing.T) {
 		assertNonErrorReply(t, got, want, err)
 	})
 
+	t.Run("RESULT SUCCESS state - Show guide", func(t *testing.T) {
+		var lower_bound int64 = 100
+		var upper_bound int64 = 200
+		store := NewInMemoryStore()
+
+		sm := types.StateMachine{}
+		s := &types.ResultSuccessState{
+			OpponentId: &USER_ID_2,
+			Role:       types.ROLE_EMPLOYEE,
+			LowerBound: &lower_bound,
+			UpperBound: &upper_bound,
+			Result:     &upper_bound,
+		}
+		sm.SetState(s)
+		store.states[USER_ID] = &sm
+
+		var nextState types.State = s
+		want := []types.ReplyDTO{
+			{
+				UserId: FROM.ID,
+				Messages: []types.ReplyMessage{
+					{
+						Message:     MESSAGE_START_GUIDE,
+						ReplyMarkup: nil,
+					},
+				},
+				NextState: &nextState,
+			},
+		}
+
+		update := types.TelegramUpdate{
+			UpdateID: 1,
+			Message: types.Message{
+				MessageID: 1,
+				Text:      "anything",
+				From:      FROM,
+			},
+		}
+
+		got, err := createReply(update, store)
+		assertNonErrorReply(t, got, want, err)
+	})
+
 	t.Run("ANY state with /reset - should set to initial state", func(t *testing.T) {
 		store := NewInMemoryStore()
 		sm1 := types.StateMachine{}

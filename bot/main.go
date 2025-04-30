@@ -409,6 +409,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 						NextState: &nextState2,
 					},
 				}, nil
+
 			default:
 				var nextState types.State = &types.WaitingForResultState{
 					OpponentId: s.OpponentId,
@@ -431,6 +432,26 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 			}
 		}
 
+	case *types.ResultSuccessState:
+		var nextState types.State = &types.ResultSuccessState{
+			OpponentId: s.OpponentId,
+			Role:       s.Role,
+			LowerBound: s.LowerBound,
+			UpperBound: s.UpperBound,
+			Result:     s.Result,
+		}
+		return []types.ReplyDTO{
+			{
+				UserId: userData.ID,
+				Messages: []types.ReplyMessage{
+					{
+						Message:     MESSAGE_START_GUIDE,
+						ReplyMarkup: nil,
+					},
+				},
+				NextState: &nextState,
+			},
+		}, nil
 	default:
 		return []types.ReplyDTO{
 			{
