@@ -13,6 +13,8 @@ import (
 	"github.com/ikebastuz/tgn/types"
 )
 
+const UPPER_BOUND_MULTIPLIER int64 = 3
+
 func HandleMessage(ctx context.Context, client *telegram.Client, update types.TelegramUpdate, store types.Store) error {
 	replies, err := createReply(update, store)
 	if err != nil {
@@ -70,10 +72,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 	if isResetMessage(&update) {
 		log.Infof("Received RESET message from USER %v", userData.ID)
 
-		// TODO: handle case when already connected to another user
-		// need to reset that user as well
 		response := []types.ReplyDTO{}
-		log.Infof("debug %v", sm.GetState().GetState())
 		switch s := sm.GetState().(type) {
 		case *types.SelectUpperBoundsState:
 			log.Infof("Resetting opponent %d state aswell", *s.OpponentId)
@@ -93,7 +92,6 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 		return response, nil
 	}
 
-	// log.Infof("CURRENT STATE: %v", sm.GetState().GetState())
 	switch s := sm.GetState().(type) {
 	case *types.InitialState:
 		incomingConnectionId, isConnectionMessage := getConnectionId(&update)
@@ -330,6 +328,20 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 				},
 			}, nil
 		} else {
+			if upper_bound > *s.LowerBound*UPPER_BOUND_MULTIPLIER {
+				return []types.ReplyDTO{
+					{
+						UserId: userData.ID,
+						Messages: []types.ReplyMessage{
+							{
+								Message:     createUseValidUpperBoundMessage(),
+								ReplyMarkup: nil,
+							},
+						},
+					},
+				}, nil
+			}
+
 			opponentState := store.GetDialogState(s.OpponentId)
 			switch os := opponentState.GetState().(type) {
 			case *types.WaitingForResultState:

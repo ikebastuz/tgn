@@ -12,6 +12,10 @@ const CONNECTION_PATTERN = `^\s*/connect\s+(\d+)\s*$`
 const START_PATTERN = `(?s).*/start.*`
 const RESET_PATTERN = `(?s).*/reset.*`
 
+func createUseValidUpperBoundMessage() string {
+	return fmt.Sprintf(MESSAGE_USE_VALID_UPPER_BOUND, UPPER_BOUND_MULTIPLIER)
+}
+
 func createConnectionMessage(userName string, connectionId int64) string {
 	return fmt.Sprintf(MESSAGE_FORWARD_CONNECTION_01, userName, connectionId)
 }

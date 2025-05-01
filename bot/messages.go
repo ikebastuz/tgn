@@ -22,6 +22,7 @@ const (
 	MESSAGE_SELECT_SALARY_UPPER_BOUND    = "Select your upper salary bounds"
 	MESSAGE_WAITING_FOR_RESULT           = "Waiting for result..."
 	MESSAGE_USE_VALID_POSITIVE_NUMBER    = "Use valid positive number"
+	MESSAGE_USE_VALID_UPPER_BOUND        = "Upper bound should be less or equal then %d x lower bounds"
 	MESSAGE_RESULT_SUCCESS               = "Congratulations. You can agree on the amount of: %d"
 	MESSAGE_RESULT_ERROR                 = "Your salary ranges do not overlap. Do you wish to try again?"
 )
