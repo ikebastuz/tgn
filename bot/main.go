@@ -462,7 +462,6 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 				}, nil
 			}
 		}
-
 	case *types.ResultSuccessState:
 		var nextState types.State = &types.ResultSuccessState{
 			OpponentId: s.OpponentId,
@@ -529,7 +528,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 					UserId: userData.ID,
 					Messages: []types.ReplyMessage{
 						{
-							Message:     MESSAGE_SELECT_SALARY_LOWER_BOUND,
+							Message:     createSelectLowerBoundsMessage(s.Role),
 							ReplyMarkup: nil,
 						},
 					},
@@ -539,7 +538,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 					UserId: *s.OpponentId,
 					Messages: []types.ReplyMessage{
 						{
-							Message:     MESSAGE_SELECT_SALARY_LOWER_BOUND,
+							Message:     createSelectLowerBoundsMessage(opponentRole),
 							ReplyMarkup: nil,
 						},
 					},

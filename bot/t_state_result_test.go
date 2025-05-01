@@ -140,7 +140,7 @@ func TestCreateReplyResult(t *testing.T) {
 				UserId: TEST_FROM.ID,
 				Messages: []types.ReplyMessage{
 					{
-						Message:     MESSAGE_SELECT_SALARY_LOWER_BOUND,
+						Message:     createSelectLowerBoundsMessage(types.ROLE_EMPLOYEE),
 						ReplyMarkup: nil,
 					},
 				},
@@ -150,7 +150,7 @@ func TestCreateReplyResult(t *testing.T) {
 				UserId: TEST_USER_ID_2,
 				Messages: []types.ReplyMessage{
 					{
-						Message:     MESSAGE_SELECT_SALARY_LOWER_BOUND,
+						Message:     createSelectLowerBoundsMessage(types.ROLE_EMPLOYER),
 						ReplyMarkup: nil,
 					},
 				},
