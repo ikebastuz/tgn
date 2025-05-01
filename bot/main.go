@@ -229,13 +229,14 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 		var nextRole1 types.Role
 		var nextRole2 types.Role
 
-		if update.CallbackQuery.Data == actions.ACTION_SELECT_EMPLOYEE {
+		switch update.CallbackQuery.Data {
+		case actions.ACTION_SELECT_EMPLOYEE:
 			nextRole1 = types.ROLE_EMPLOYEE
 			nextRole2 = types.ROLE_EMPLOYER
-		} else if update.CallbackQuery.Data == actions.ACTION_SELECT_EMPLOYER {
+		case actions.ACTION_SELECT_EMPLOYER:
 			nextRole1 = types.ROLE_EMPLOYER
 			nextRole2 = types.ROLE_EMPLOYEE
-		} else {
+		default:
 			return []types.ReplyDTO{
 				{
 					UserId: userData.ID,
@@ -335,7 +336,8 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 				var employeeRange solver.Range
 				var employerRange solver.Range
 
-				if s.Role == types.ROLE_EMPLOYEE {
+				switch s.Role {
+				case types.ROLE_EMPLOYEE:
 					employeeRange = solver.Range{
 						Min: *s.LowerBound,
 						Max: upper_bound,
@@ -344,7 +346,8 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 						Min: *os.LowerBound,
 						Max: *os.UpperBound,
 					}
-				} else if s.Role == types.ROLE_EMPLOYER {
+
+				case types.ROLE_EMPLOYER:
 					employerRange = solver.Range{
 						Min: *s.LowerBound,
 						Max: upper_bound,
