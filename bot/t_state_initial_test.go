@@ -7,6 +7,31 @@ import (
 	"github.com/ikebastuz/tgn/types"
 )
 
+var nextState types.State = &types.WaitingForConnectState{
+	ConnectionId: &TEST_CONNECTION_ID,
+}
+var TEST_WAITING_FOR_CONNECT_REPLY []types.ReplyDTO = []types.ReplyDTO{
+	{
+		UserId: TEST_FROM.ID,
+		Messages: []types.ReplyMessage{
+			{
+				Message:     createConnectionMessage(TEST_FROM.USERNAME, TEST_CONNECTION_ID),
+				ReplyMarkup: nil,
+			},
+		},
+		NextState: &nextState,
+	},
+	{
+		UserId: TEST_FROM.ID,
+		Messages: []types.ReplyMessage{
+			{
+				Message:     MESSAGE_FORWARD_CONNECTION_02,
+				ReplyMarkup: nil,
+			},
+		},
+	},
+}
+
 func TestCreateReplyInitial(t *testing.T) {
 	t.Run("INITIAL state, irrelevant message - should show guide", func(t *testing.T) {
 		store := NewInMemoryStore()
@@ -39,31 +64,6 @@ func TestCreateReplyInitial(t *testing.T) {
 		sm.SetState(&types.InitialState{})
 		store.states[TEST_USER_ID] = &sm
 
-		var nextState types.State = &types.WaitingForConnectState{
-			ConnectionId: &TEST_CONNECTION_ID,
-		}
-		want := []types.ReplyDTO{
-			{
-				UserId: TEST_FROM.ID,
-				Messages: []types.ReplyMessage{
-					{
-						Message:     createConnectionMessage(TEST_FROM.USERNAME, TEST_CONNECTION_ID),
-						ReplyMarkup: nil,
-					},
-				},
-				NextState: &nextState,
-			},
-			{
-				UserId: TEST_FROM.ID,
-				Messages: []types.ReplyMessage{
-					{
-						Message:     MESSAGE_FORWARD_CONNECTION_02,
-						ReplyMarkup: nil,
-					},
-				},
-			},
-		}
-
 		update := types.TelegramUpdate{
 			Message: types.Message{
 				From: TEST_FROM,
@@ -74,7 +74,7 @@ func TestCreateReplyInitial(t *testing.T) {
 		got, err := createReply(update, store)
 
 		// TODO: test with correct connection id
-		assertSingleReply(t, got[1], want[1], err)
+		assertSingleReply(t, got[1], TEST_WAITING_FOR_CONNECT_REPLY[1], err)
 	})
 
 	t.Run("INITIAL state, /connect message to yourself - should show an error", func(t *testing.T) {

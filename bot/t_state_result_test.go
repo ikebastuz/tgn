@@ -67,33 +67,6 @@ func TestCreateReplyResult(t *testing.T) {
 		sm.SetState(s)
 		store.states[TEST_USER_ID] = &sm
 
-		var nextState types.State = &types.WaitingForConnectState{
-			ConnectionId: &TEST_CONNECTION_ID,
-		}
-
-		// TODO: unify with INITIAL_STATE test
-		want := []types.ReplyDTO{
-			{
-				UserId: TEST_FROM.ID,
-				Messages: []types.ReplyMessage{
-					{
-						Message:     createConnectionMessage(TEST_FROM.USERNAME, TEST_CONNECTION_ID),
-						ReplyMarkup: nil,
-					},
-				},
-				NextState: &nextState,
-			},
-			{
-				UserId: TEST_FROM.ID,
-				Messages: []types.ReplyMessage{
-					{
-						Message:     MESSAGE_FORWARD_CONNECTION_02,
-						ReplyMarkup: nil,
-					},
-				},
-			},
-		}
-
 		update := types.TelegramUpdate{
 			UpdateID: 1,
 			Message: types.Message{
@@ -105,7 +78,7 @@ func TestCreateReplyResult(t *testing.T) {
 
 		got, err := createReply(update, store)
 		// TODO: test with correct connection id
-		assertSingleReply(t, got[1], want[1], err)
+		assertSingleReply(t, got[1], TEST_WAITING_FOR_CONNECT_REPLY[1], err)
 	})
 
 	t.Run("RESULT Error state - Selected No - Set both to initial state", func(t *testing.T) {

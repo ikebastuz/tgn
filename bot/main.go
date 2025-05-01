@@ -101,8 +101,6 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 			return reply, nil
 		} else if isConnectionMessage {
 			log.Info("Received CONNECT message")
-			// Connect message
-			// TODO: handle connection
 			targetUserId := store.GetConnectionTarget(&incomingConnectionId)
 			if targetUserId == nil {
 				log.Warnf("Connection id %d does not exist", incomingConnectionId)
