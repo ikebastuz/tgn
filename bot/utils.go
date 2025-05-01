@@ -12,6 +12,10 @@ const CONNECTION_PATTERN = `^\s*/connect\s+(\d+)\s*$`
 const START_PATTERN = `(?s).*/start.*`
 const RESET_PATTERN = `(?s).*/reset.*`
 
+func createSelectUpperBoundMessage() string {
+	return fmt.Sprintf("%s\n%s", MESSAGE_SELECT_SALARY_UPPER_BOUND, createUseValidUpperBoundMessage())
+}
+
 func createUseValidUpperBoundMessage() string {
 	return fmt.Sprintf(MESSAGE_USE_VALID_UPPER_BOUND, UPPER_BOUND_MULTIPLIER)
 }

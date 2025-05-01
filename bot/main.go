@@ -304,7 +304,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 					UserId: userData.ID,
 					Messages: []types.ReplyMessage{
 						{
-							Message:     MESSAGE_SELECT_SALARY_UPPER_BOUND,
+							Message:     createSelectUpperBoundMessage(),
 							ReplyMarkup: nil,
 						},
 					},

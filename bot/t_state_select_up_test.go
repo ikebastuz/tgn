@@ -44,6 +44,7 @@ func TestCreateReplySelectUP(t *testing.T) {
 		got, err := createReply(update, store)
 		assertNonErrorReply(t, got, want, err)
 	})
+
 	t.Run("SELECT UPPER BOUNDS state - Opponent is still selecting - Waiting for result state", func(t *testing.T) {
 		var lower_bound int64 = 100500
 		var upper_bound int64 = 100500

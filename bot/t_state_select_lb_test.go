@@ -15,6 +15,7 @@ func TestCreateReplySelectLB(t *testing.T) {
 			Role:       types.ROLE_EMPLOYEE,
 		})
 		store.states[TEST_USER_ID] = &sm
+
 		want := []types.ReplyDTO{
 			{
 				UserId: TEST_FROM.ID,
@@ -46,7 +47,7 @@ func TestCreateReplySelectLB(t *testing.T) {
 		sm := types.StateMachine{}
 		sm.SetState(&types.SelectLowerBoundsState{
 			OpponentId: &TEST_USER_ID_2,
-			Role:       types.ROLE_EMPLOYEE, // TODO: make it required
+			Role:       types.ROLE_EMPLOYEE,
 		})
 		store.states[TEST_USER_ID] = &sm
 
@@ -60,7 +61,7 @@ func TestCreateReplySelectLB(t *testing.T) {
 				UserId: TEST_FROM.ID,
 				Messages: []types.ReplyMessage{
 					{
-						Message:     MESSAGE_SELECT_SALARY_UPPER_BOUND,
+						Message:     createSelectUpperBoundMessage(),
 						ReplyMarkup: nil,
 					},
 				},
