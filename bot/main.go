@@ -93,7 +93,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 		return response, nil
 	}
 
-	log.Infof("CURRENT STATE: %v", sm.GetState().GetState())
+	// log.Infof("CURRENT STATE: %v", sm.GetState().GetState())
 	switch s := sm.GetState().(type) {
 	case *types.InitialState:
 		incomingConnectionId, isConnectionMessage := getConnectionId(&update)
@@ -263,7 +263,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 				UserId: userData.ID,
 				Messages: []types.ReplyMessage{
 					{
-						Message:     MESSAGE_SELECT_SALARY_LOWER_BOUND,
+						Message:     createSelectLowerBoundsMessage(nextRole1),
 						ReplyMarkup: nil,
 					},
 				},
@@ -273,7 +273,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 				UserId: *s.OpponentId,
 				Messages: []types.ReplyMessage{
 					{
-						Message:     MESSAGE_SELECT_SALARY_LOWER_BOUND,
+						Message:     createSelectLowerBoundsMessage(nextRole2),
 						ReplyMarkup: nil,
 					},
 				},

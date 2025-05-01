@@ -18,7 +18,7 @@ const (
 	MESSAGE_SELECT_YOUR_ROLE_CONNECTED   = "You are connected!\nSelect your role"
 	MESSAGE_SELECT_YOUR_ROLE_UNEXPECTED  = "Not sure what happened...\nPlease, select your role"
 	MESSAGE_UNEXPECTED_STATE             = "Wow, I'm not sure how we ended up being here\nTry to reset with\n/reset"
-	MESSAGE_SELECT_SALARY_LOWER_BOUND    = "Select your lower salary bounds"
+	MESSAGE_SELECT_SALARY_LOWER_BOUND    = "Your role is: %s\nSelect your lower salary bounds"
 	MESSAGE_SELECT_SALARY_UPPER_BOUND    = "Select your upper salary bounds"
 	MESSAGE_WAITING_FOR_RESULT           = "Waiting for result..."
 	MESSAGE_USE_VALID_POSITIVE_NUMBER    = "Use valid positive number"

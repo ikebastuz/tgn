@@ -261,7 +261,7 @@ func TestCreateReply(t *testing.T) {
 				UserId: FROM.ID,
 				Messages: []types.ReplyMessage{
 					{
-						Message:     MESSAGE_SELECT_SALARY_LOWER_BOUND,
+						Message:     createSelectLowerBoundsMessage(types.ROLE_EMPLOYEE),
 						ReplyMarkup: nil,
 					},
 				},
@@ -271,7 +271,7 @@ func TestCreateReply(t *testing.T) {
 				UserId: FROM_2.ID,
 				Messages: []types.ReplyMessage{
 					{
-						Message:     MESSAGE_SELECT_SALARY_LOWER_BOUND,
+						Message:     createSelectLowerBoundsMessage(types.ROLE_EMPLOYER),
 						ReplyMarkup: nil,
 					},
 				},
@@ -325,7 +325,7 @@ func TestCreateReply(t *testing.T) {
 				UserId: FROM.ID,
 				Messages: []types.ReplyMessage{
 					{
-						Message:     MESSAGE_SELECT_SALARY_LOWER_BOUND,
+						Message:     createSelectLowerBoundsMessage(types.ROLE_EMPLOYER),
 						ReplyMarkup: nil,
 					},
 				},
@@ -335,7 +335,7 @@ func TestCreateReply(t *testing.T) {
 				UserId: FROM_2.ID,
 				Messages: []types.ReplyMessage{
 					{
-						Message:     MESSAGE_SELECT_SALARY_LOWER_BOUND,
+						Message:     createSelectLowerBoundsMessage(types.ROLE_EMPLOYEE),
 						ReplyMarkup: nil,
 					},
 				},

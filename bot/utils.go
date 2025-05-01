@@ -20,6 +20,10 @@ func createResultMessage(salary int64) string {
 	return fmt.Sprintf(MESSAGE_RESULT_SUCCESS, salary)
 }
 
+func createSelectLowerBoundsMessage(role types.Role) string {
+	return fmt.Sprintf(MESSAGE_SELECT_SALARY_LOWER_BOUND, role)
+}
+
 func getUserData(update types.TelegramUpdate) (*types.From, error) {
 	if update.CallbackQuery.From.ID > 0 {
 		return &update.CallbackQuery.From, nil
