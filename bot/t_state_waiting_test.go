@@ -6,23 +6,16 @@ import (
 )
 
 func TestCreateReplyWaiting(t *testing.T) {
-	var USER_ID int64 = 123
-	var FROM = types.From{
-		ID:       int64(USER_ID),
-		USERNAME: "hello",
-	}
-	var CONNECTION_ID int64 = 100500
-
 	t.Run("WAITING state, - tells about waiting for connection", func(t *testing.T) {
 		store := NewInMemoryStore()
 		sm := types.StateMachine{}
 		sm.SetState(&types.WaitingForConnectState{
-			ConnectionId: &CONNECTION_ID,
+			ConnectionId: &TEST_CONNECTION_ID,
 		})
-		store.states[FROM.ID] = &sm
+		store.states[TEST_FROM.ID] = &sm
 
 		var FROM = types.From{
-			ID:       int64(USER_ID),
+			ID:       int64(TEST_USER_ID),
 			USERNAME: "hello",
 		}
 		want := []types.ReplyDTO{

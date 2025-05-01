@@ -8,13 +8,6 @@ import (
 )
 
 func TestCreateReplyResult(t *testing.T) {
-	var USER_ID int64 = 123
-	var USER_ID_2 int64 = 124
-	var FROM = types.From{
-		ID:       int64(USER_ID),
-		USERNAME: "hello",
-	}
-
 	t.Run("RESULT SUCCESS state - Show guide", func(t *testing.T) {
 		var lower_bound int64 = 100
 		var upper_bound int64 = 200
@@ -22,19 +15,19 @@ func TestCreateReplyResult(t *testing.T) {
 
 		sm := types.StateMachine{}
 		s := &types.ResultSuccessState{
-			OpponentId: &USER_ID_2,
+			OpponentId: &TEST_USER_ID_2,
 			Role:       types.ROLE_EMPLOYEE,
 			LowerBound: &lower_bound,
 			UpperBound: &upper_bound,
 			Result:     &upper_bound,
 		}
 		sm.SetState(s)
-		store.states[USER_ID] = &sm
+		store.states[TEST_USER_ID] = &sm
 
 		var nextState types.State = s
 		want := []types.ReplyDTO{
 			{
-				UserId: FROM.ID,
+				UserId: TEST_FROM.ID,
 				Messages: []types.ReplyMessage{
 					{
 						Message:     MESSAGE_START_GUIDE,
@@ -50,7 +43,7 @@ func TestCreateReplyResult(t *testing.T) {
 			Message: types.Message{
 				MessageID: 1,
 				Text:      "anything",
-				From:      FROM,
+				From:      TEST_FROM,
 			},
 		}
 
@@ -63,23 +56,23 @@ func TestCreateReplyResult(t *testing.T) {
 
 		sm1 := types.StateMachine{}
 		sm1.SetState(&types.ResultErrorState{
-			OpponentId: &USER_ID_2,
+			OpponentId: &TEST_USER_ID_2,
 			Role:       types.ROLE_EMPLOYEE,
 		})
-		store.states[USER_ID] = &sm1
+		store.states[TEST_USER_ID] = &sm1
 
 		sm2 := types.StateMachine{}
 		sm2.SetState(&types.ResultErrorState{
-			OpponentId: &USER_ID,
+			OpponentId: &TEST_USER_ID,
 			Role:       types.ROLE_EMPLOYEE,
 		})
-		store.states[USER_ID_2] = &sm2
+		store.states[TEST_USER_ID_2] = &sm2
 
 		var nextState types.State = &types.InitialState{}
 
 		want := []types.ReplyDTO{
 			{
-				UserId: FROM.ID,
+				UserId: TEST_FROM.ID,
 				Messages: []types.ReplyMessage{
 					{
 						Message:     MESSAGE_START_GUIDE,
@@ -89,7 +82,7 @@ func TestCreateReplyResult(t *testing.T) {
 				NextState: &nextState,
 			},
 			{
-				UserId: USER_ID_2,
+				UserId: TEST_USER_ID_2,
 				Messages: []types.ReplyMessage{
 					{
 						Message:     MESSAGE_START_GUIDE,
@@ -105,7 +98,7 @@ func TestCreateReplyResult(t *testing.T) {
 			Message: types.Message{
 				MessageID: 1,
 				Text:      "anything",
-				From:      FROM,
+				From:      TEST_FROM,
 			},
 			CallbackQuery: types.CallbackQuery{
 				Data: actions.ACTION_SELECT_NO,
@@ -121,30 +114,30 @@ func TestCreateReplyResult(t *testing.T) {
 
 		sm1 := types.StateMachine{}
 		sm1.SetState(&types.ResultErrorState{
-			OpponentId: &USER_ID_2,
+			OpponentId: &TEST_USER_ID_2,
 			Role:       types.ROLE_EMPLOYEE,
 		})
-		store.states[USER_ID] = &sm1
+		store.states[TEST_USER_ID] = &sm1
 
 		sm2 := types.StateMachine{}
 		sm2.SetState(&types.ResultErrorState{
-			OpponentId: &USER_ID,
+			OpponentId: &TEST_USER_ID,
 			Role:       types.ROLE_EMPLOYER,
 		})
-		store.states[USER_ID_2] = &sm2
+		store.states[TEST_USER_ID_2] = &sm2
 
 		var nextState1 types.State = &types.SelectLowerBoundsState{
-			OpponentId: &USER_ID_2,
+			OpponentId: &TEST_USER_ID_2,
 			Role:       types.ROLE_EMPLOYEE,
 		}
 		var nextState2 types.State = &types.SelectLowerBoundsState{
-			OpponentId: &USER_ID,
+			OpponentId: &TEST_USER_ID,
 			Role:       types.ROLE_EMPLOYER,
 		}
 
 		want := []types.ReplyDTO{
 			{
-				UserId: FROM.ID,
+				UserId: TEST_FROM.ID,
 				Messages: []types.ReplyMessage{
 					{
 						Message:     MESSAGE_SELECT_SALARY_LOWER_BOUND,
@@ -154,7 +147,7 @@ func TestCreateReplyResult(t *testing.T) {
 				NextState: &nextState1,
 			},
 			{
-				UserId: USER_ID_2,
+				UserId: TEST_USER_ID_2,
 				Messages: []types.ReplyMessage{
 					{
 						Message:     MESSAGE_SELECT_SALARY_LOWER_BOUND,
@@ -170,7 +163,7 @@ func TestCreateReplyResult(t *testing.T) {
 			Message: types.Message{
 				MessageID: 1,
 				Text:      "anything",
-				From:      FROM,
+				From:      TEST_FROM,
 			},
 			CallbackQuery: types.CallbackQuery{
 				Data: actions.ACTION_SELECT_YES,
