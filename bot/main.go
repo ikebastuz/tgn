@@ -458,7 +458,8 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 			},
 		}, nil
 	case *types.ResultErrorState:
-		if update.CallbackQuery.Data == actions.ACTION_SELECT_NO {
+		switch update.CallbackQuery.Data {
+		case actions.ACTION_SELECT_NO:
 			var nextState types.State = &types.InitialState{}
 			return []types.ReplyDTO{
 				{
@@ -482,7 +483,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 					NextState: &nextState,
 				},
 			}, nil
-		} else if update.CallbackQuery.Data == actions.ACTION_SELECT_YES {
+		case actions.ACTION_SELECT_YES:
 			var nextState1 types.State = &types.SelectLowerBoundsState{
 				OpponentId: s.OpponentId,
 				Role:       s.Role,
@@ -520,7 +521,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 					NextState: &nextState2,
 				},
 			}, nil
-		} else {
+		default:
 			return []types.ReplyDTO{}, nil
 		}
 	default:
