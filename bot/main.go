@@ -97,36 +97,8 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 		incomingConnectionId, isConnectionMessage := getConnectionId(&update)
 
 		if isStartMessage(&update) {
-			log.Info("Received START message")
-
-			// Start message
-			newConnectionId := store.CreateConnectionId(&userData.ID)
-
-			var nextState types.State = &types.WaitingForConnectState{
-				ConnectionId: &newConnectionId,
-			}
-
-			return []types.ReplyDTO{
-				{
-					UserId: userData.ID,
-					Messages: []types.ReplyMessage{
-						{
-							Message:     createConnectionMessage(userData.USERNAME, newConnectionId),
-							ReplyMarkup: nil,
-						},
-					},
-					NextState: &nextState,
-				},
-				{
-					UserId: userData.ID,
-					Messages: []types.ReplyMessage{
-						{
-							Message:     MESSAGE_FORWARD_CONNECTION_02,
-							ReplyMarkup: nil,
-						},
-					},
-				},
-			}, nil
+			reply := createStartReply(store, userData)
+			return reply, nil
 		} else if isConnectionMessage {
 			log.Info("Received CONNECT message")
 			// Connect message
@@ -462,38 +434,9 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 			}
 		}
 	case *types.ResultSuccessState:
-		// TODO : unify with InitialState flow
 		if isStartMessage(&update) {
-			log.Info("Received START message")
-
-			// Start message
-			newConnectionId := store.CreateConnectionId(&userData.ID)
-
-			var nextState types.State = &types.WaitingForConnectState{
-				ConnectionId: &newConnectionId,
-			}
-
-			return []types.ReplyDTO{
-				{
-					UserId: userData.ID,
-					Messages: []types.ReplyMessage{
-						{
-							Message:     createConnectionMessage(userData.USERNAME, newConnectionId),
-							ReplyMarkup: nil,
-						},
-					},
-					NextState: &nextState,
-				},
-				{
-					UserId: userData.ID,
-					Messages: []types.ReplyMessage{
-						{
-							Message:     MESSAGE_FORWARD_CONNECTION_02,
-							ReplyMarkup: nil,
-						},
-					},
-				},
-			}, nil
+			reply := createStartReply(store, userData)
+			return reply, nil
 		}
 		var nextState types.State = &types.ResultSuccessState{
 			OpponentId: s.OpponentId,

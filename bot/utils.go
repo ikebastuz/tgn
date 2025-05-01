@@ -3,6 +3,7 @@ package bot
 import (
 	"fmt"
 	"github.com/ikebastuz/tgn/types"
+	log "github.com/sirupsen/logrus"
 	"regexp"
 	"strconv"
 	"strings"
@@ -104,6 +105,37 @@ func resetUserState(userId *int64, store types.Store) types.ReplyDTO {
 			{
 				Message:     MESSAGE_START_GUIDE,
 				ReplyMarkup: nil,
+			},
+		},
+	}
+}
+
+func createStartReply(store types.Store, userData *types.From) []types.ReplyDTO {
+	log.Info("Received START message")
+	newConnectionId := store.CreateConnectionId(&userData.ID)
+
+	var nextState types.State = &types.WaitingForConnectState{
+		ConnectionId: &newConnectionId,
+	}
+
+	return []types.ReplyDTO{
+		{
+			UserId: userData.ID,
+			Messages: []types.ReplyMessage{
+				{
+					Message:     createConnectionMessage(userData.USERNAME, newConnectionId),
+					ReplyMarkup: nil,
+				},
+			},
+			NextState: &nextState,
+		},
+		{
+			UserId: userData.ID,
+			Messages: []types.ReplyMessage{
+				{
+					Message:     MESSAGE_FORWARD_CONNECTION_02,
+					ReplyMarkup: nil,
+				},
 			},
 		},
 	}
