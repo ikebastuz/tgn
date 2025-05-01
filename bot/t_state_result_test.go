@@ -51,6 +51,63 @@ func TestCreateReplyResult(t *testing.T) {
 		assertNonErrorReply(t, got, want, err)
 	})
 
+	t.Run("RESULT SUCCESS state - /start command should move to WAITING FOR CONNECT state", func(t *testing.T) {
+		var lower_bound int64 = 100
+		var upper_bound int64 = 200
+		store := NewInMemoryStore()
+
+		sm := types.StateMachine{}
+		s := &types.ResultSuccessState{
+			OpponentId: &TEST_USER_ID_2,
+			Role:       types.ROLE_EMPLOYEE,
+			LowerBound: &lower_bound,
+			UpperBound: &upper_bound,
+			Result:     &upper_bound,
+		}
+		sm.SetState(s)
+		store.states[TEST_USER_ID] = &sm
+
+		var nextState types.State = &types.WaitingForConnectState{
+			ConnectionId: &TEST_CONNECTION_ID,
+		}
+
+		// TODO: unify with INITIAL_STATE test
+		want := []types.ReplyDTO{
+			{
+				UserId: TEST_FROM.ID,
+				Messages: []types.ReplyMessage{
+					{
+						Message:     createConnectionMessage(TEST_FROM.USERNAME, TEST_CONNECTION_ID),
+						ReplyMarkup: nil,
+					},
+				},
+				NextState: &nextState,
+			},
+			{
+				UserId: TEST_FROM.ID,
+				Messages: []types.ReplyMessage{
+					{
+						Message:     MESSAGE_FORWARD_CONNECTION_02,
+						ReplyMarkup: nil,
+					},
+				},
+			},
+		}
+
+		update := types.TelegramUpdate{
+			UpdateID: 1,
+			Message: types.Message{
+				MessageID: 1,
+				Text:      " /start ",
+				From:      TEST_FROM,
+			},
+		}
+
+		got, err := createReply(update, store)
+		// TODO: test with correct connection id
+		assertSingleReply(t, got[1], want[1], err)
+	})
+
 	t.Run("RESULT Error state - Selected No - Set both to initial state", func(t *testing.T) {
 		store := NewInMemoryStore()
 

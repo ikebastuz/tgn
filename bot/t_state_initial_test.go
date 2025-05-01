@@ -73,6 +73,7 @@ func TestCreateReplyInitial(t *testing.T) {
 
 		got, err := createReply(update, store)
 
+		// TODO: test with correct connection id
 		assertSingleReply(t, got[1], want[1], err)
 	})
 
