@@ -372,20 +372,8 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 						},
 					}, nil
 				}
-				var nextState1 types.State = &types.ResultSuccessState{
-					OpponentId: s.OpponentId,
-					Role:       s.Role,
-					LowerBound: s.LowerBound,
-					UpperBound: &upper_bound,
-					Result:     &salary,
-				}
-				var nextState2 types.State = &types.ResultSuccessState{
-					OpponentId: os.OpponentId,
-					Role:       os.Role,
-					LowerBound: os.LowerBound,
-					UpperBound: os.UpperBound,
-					Result:     &salary,
-				}
+				var nextState1 types.State = &types.InitialState{}
+				var nextState2 types.State = &types.InitialState{}
 
 				return []types.ReplyDTO{
 					{
@@ -431,30 +419,6 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 				}, nil
 			}
 		}
-	case *types.ResultSuccessState:
-		if isStartMessage(&update) {
-			reply := createStartReply(store, userData)
-			return reply, nil
-		}
-		var nextState types.State = &types.ResultSuccessState{
-			OpponentId: s.OpponentId,
-			Role:       s.Role,
-			LowerBound: s.LowerBound,
-			UpperBound: s.UpperBound,
-			Result:     s.Result,
-		}
-		return []types.ReplyDTO{
-			{
-				UserId: userData.ID,
-				Messages: []types.ReplyMessage{
-					{
-						Message:     MESSAGE_START_GUIDE,
-						ReplyMarkup: nil,
-					},
-				},
-				NextState: &nextState,
-			},
-		}, nil
 	case *types.ResultErrorState:
 		switch update.CallbackQuery.Data {
 		case actions.ACTION_SELECT_NO:

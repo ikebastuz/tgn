@@ -120,20 +120,7 @@ func TestCreateReplySelectUP(t *testing.T) {
 		})
 		store.states[TEST_USER_ID_2] = &sm2
 
-		var nextState1 types.State = &types.ResultSuccessState{
-			OpponentId: &TEST_USER_ID_2,
-			Role:       types.ROLE_EMPLOYEE,
-			LowerBound: &lower_bound,
-			UpperBound: &lower_bound,
-			Result:     &upper_bound,
-		}
-		var nextState2 types.State = &types.ResultSuccessState{
-			OpponentId: &TEST_USER_ID,
-			Role:       types.ROLE_EMPLOYER,
-			LowerBound: &lower_bound,
-			UpperBound: &lower_bound,
-			Result:     &upper_bound,
-		}
+		var nextState types.State = &types.InitialState{}
 		want := []types.ReplyDTO{
 			{
 				UserId: TEST_FROM.ID,
@@ -143,7 +130,7 @@ func TestCreateReplySelectUP(t *testing.T) {
 						ReplyMarkup: nil,
 					},
 				},
-				NextState: &nextState1,
+				NextState: &nextState,
 			},
 			{
 				UserId: TEST_FROM_2.ID,
@@ -153,7 +140,7 @@ func TestCreateReplySelectUP(t *testing.T) {
 						ReplyMarkup: nil,
 					},
 				},
-				NextState: &nextState2,
+				NextState: &nextState,
 			},
 		}
 
