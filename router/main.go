@@ -3,8 +3,10 @@ package router
 import (
 	"context"
 	"encoding/json"
-	log "github.com/sirupsen/logrus"
 	"io"
+
+	log "github.com/sirupsen/logrus"
+
 	// "math/rand"
 	"net/http"
 	// "strconv"
@@ -19,19 +21,20 @@ import (
 
 func HandleHealthCheck(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("OK"))
+	w.Write([]byte("✅ Service is healthy"))
 }
 
 func HandleWebhook(ctx context.Context, client *telegram.Client, store types.Store, w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		log.Warnf("❌ Invalid request method: %s", r.Method)
+		http.Error(w, "⚠️ Method not allowed - only POST requests are accepted", http.StatusMethodNotAllowed)
 		return
 	}
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		log.Errorf("Failed to read request body: %v", err)
-		http.Error(w, "Bad request", http.StatusBadRequest)
+		log.Errorf("❌ Request error: Failed to read request body: %v", err)
+		http.Error(w, "⚠️ Invalid request format - could not read request body", http.StatusBadRequest)
 		return
 	}
 
@@ -51,8 +54,8 @@ func HandleWebhook(ctx context.Context, client *telegram.Client, store types.Sto
 	// }
 	var update types.TelegramUpdate
 	if err := json.Unmarshal(body, &update); err != nil {
-		log.Errorf("Failed to parse update: %v", err)
-		http.Error(w, "Bad request", http.StatusBadRequest)
+		log.Errorf("❌ Parse error: Failed to parse update: %v", err)
+		http.Error(w, "⚠️ Invalid request format - could not parse JSON body", http.StatusBadRequest)
 		return
 	}
 
@@ -63,7 +66,8 @@ func HandleWebhook(ctx context.Context, client *telegram.Client, store types.Sto
 	err = bot.HandleMessage(ctx, client, update, store)
 
 	if err != nil {
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		log.Errorf("❌ Server error: Failed to handle message: %v", err)
+		http.Error(w, "⚠️ Internal server error - please try again later", http.StatusInternalServerError)
 		return
 	}
 
@@ -138,5 +142,5 @@ func HandleWebhook(ctx context.Context, client *telegram.Client, store types.Sto
 	// }
 
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("OK"))
+	w.Write([]byte("✅ Message processed successfully"))
 }

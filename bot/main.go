@@ -18,6 +18,7 @@ const UPPER_BOUND_MULTIPLIER int64 = 3
 func HandleMessage(ctx context.Context, client *telegram.Client, update types.TelegramUpdate, store types.Store) error {
 	replies, err := createReply(update, store)
 	if err != nil {
+		log.Errorf("❌ Failed to create reply: %v", err)
 		return err
 	}
 
@@ -32,11 +33,10 @@ func HandleMessage(ctx context.Context, client *telegram.Client, update types.Te
 				})
 
 				if err != nil {
-					log.Errorf("Failed to edit message: %v", err)
+					log.Errorf("❌ Message update failed: Could not edit message: %v", err)
 					return err
 				}
 			} else {
-
 				_, err = client.API().MessagesSendMessage(ctx, &tg.MessagesSendMessageRequest{
 					RandomID:    rand.Int63(),
 					Peer:        &tg.InputPeerUser{UserID: reply.UserId},
@@ -44,7 +44,7 @@ func HandleMessage(ctx context.Context, client *telegram.Client, update types.Te
 					ReplyMarkup: message.ReplyMarkup,
 				})
 				if err != nil {
-					log.Errorf("Failed to send message: %v", err)
+					log.Errorf("❌ Message delivery failed: Could not send message: %v", err)
 					return err
 				}
 			}
@@ -92,6 +92,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 		return response, nil
 	}
 
+	log.Infof("👤 User %d in state: %T", userData.ID, sm.GetState())
 	switch s := sm.GetState().(type) {
 	case *types.InitialState:
 		incomingConnectionId, isConnectionMessage := getConnectionId(&update)
