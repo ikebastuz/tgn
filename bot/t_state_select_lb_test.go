@@ -61,7 +61,7 @@ func TestCreateReplySelectLB(t *testing.T) {
 				UserId: TEST_FROM.ID,
 				Messages: []types.ReplyMessage{
 					{
-						Message:     createSelectUpperBoundMessage(),
+						Message:     createSelectUpperBoundMessage(types.ROLE_EMPLOYEE),
 						ReplyMarkup: nil,
 					},
 				},

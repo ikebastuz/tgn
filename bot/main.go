@@ -58,6 +58,7 @@ func HandleMessage(ctx context.Context, client *telegram.Client, update types.Te
 
 		if reply.NextState != nil {
 			metrics.StateTransitionCounter.Inc()
+			log.Infof("👤 User %d updates state: %T", reply.UserId, *reply.NextState)
 			store.SetDialogState(&reply.UserId, *reply.NextState)
 
 		}
@@ -94,8 +95,6 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 		case *types.SelectYourRoleState:
 			log.Infof("Resetting opponent %d state aswell", *s.OpponentId)
 			response = append(response, resetUserState(s.OpponentId, store))
-		default:
-			log.Info("default")
 		}
 
 		log.Infof("Resetting user %d state", userData.ID)
@@ -294,7 +293,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 					UserId: userData.ID,
 					Messages: []types.ReplyMessage{
 						{
-							Message:     createSelectUpperBoundMessage(),
+							Message:     createSelectUpperBoundMessage(s.Role),
 							ReplyMarkup: nil,
 						},
 					},

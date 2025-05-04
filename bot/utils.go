@@ -13,8 +13,15 @@ const CONNECTION_PATTERN = `^\s*/connect\s+(\d+)\s*$`
 const START_PATTERN = `(?s).*/start.*`
 const RESET_PATTERN = `(?s).*/reset.*`
 
-func createSelectUpperBoundMessage() string {
-	return fmt.Sprintf("%s\n%s", MESSAGE_SELECT_SALARY_UPPER_BOUND, createUseValidUpperBoundMessage())
+func createSelectUpperBoundMessage(role types.Role) string {
+	var message string
+	switch role {
+	case types.ROLE_EMPLOYEE:
+		message = MESSAGE_SELECT_SALARY_UPPER_BOUND_EMPLOYEE
+	case types.ROLE_EMPLOYER:
+		message = MESSAGE_SELECT_SALARY_UPPER_BOUND_EMPLOYER
+	}
+	return fmt.Sprintf("%s\n%s", message, createUseValidUpperBoundMessage())
 }
 
 func createUseValidUpperBoundMessage() string {
@@ -30,7 +37,14 @@ func createResultMessage(salary int64) string {
 }
 
 func createSelectLowerBoundsMessage(role types.Role) string {
-	return fmt.Sprintf(MESSAGE_SELECT_SALARY_LOWER_BOUND, role)
+	var message string
+	switch role {
+	case types.ROLE_EMPLOYEE:
+		message = MESSAGE_SELECT_SALARY_LOWER_BOUND_EMPLOYEE
+	case types.ROLE_EMPLOYER:
+		message = MESSAGE_SELECT_SALARY_LOWER_BOUND_EMPLOYER
+	}
+	return fmt.Sprintf(message, role)
 }
 
 func getUserData(update types.TelegramUpdate) (*types.From, error) {
