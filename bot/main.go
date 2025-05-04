@@ -9,6 +9,7 @@ import (
 	"github.com/gotd/td/telegram"
 	"github.com/gotd/td/tg"
 	"github.com/ikebastuz/tgn/actions"
+	"github.com/ikebastuz/tgn/metrics"
 	"github.com/ikebastuz/tgn/solver"
 	"github.com/ikebastuz/tgn/types"
 )
@@ -16,13 +17,16 @@ import (
 const UPPER_BOUND_MULTIPLIER int64 = 3
 
 func HandleMessage(ctx context.Context, client *telegram.Client, update types.TelegramUpdate, store types.Store) error {
+	metrics.RequestCounter.Inc()
 	replies, err := createReply(update, store)
 	if err != nil {
+		metrics.ErrorCounter.Inc()
 		log.Errorf("❌ Failed to create reply: %v", err)
 		return err
 	}
 
 	for _, reply := range replies {
+		metrics.ReplyCounter.Inc()
 		for _, message := range reply.Messages {
 			if message.MessageID > 0 {
 				_, err = client.API().MessagesEditMessage(ctx, &tg.MessagesEditMessageRequest{
@@ -33,6 +37,7 @@ func HandleMessage(ctx context.Context, client *telegram.Client, update types.Te
 				})
 
 				if err != nil {
+					metrics.ErrorCounter.Inc()
 					log.Errorf("❌ Message update failed: Could not edit message: %v", err)
 					return err
 				}
@@ -44,6 +49,7 @@ func HandleMessage(ctx context.Context, client *telegram.Client, update types.Te
 					ReplyMarkup: message.ReplyMarkup,
 				})
 				if err != nil {
+					metrics.ErrorCounter.Inc()
 					log.Errorf("❌ Message delivery failed: Could not send message: %v", err)
 					return err
 				}
@@ -51,7 +57,9 @@ func HandleMessage(ctx context.Context, client *telegram.Client, update types.Te
 		}
 
 		if reply.NextState != nil {
+			metrics.StateTransitionCounter.Inc()
 			store.SetDialogState(&reply.UserId, *reply.NextState)
+
 		}
 	}
 
@@ -61,15 +69,18 @@ func HandleMessage(ctx context.Context, client *telegram.Client, update types.Te
 func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyDTO, error) {
 	userData, err := getUserData(update)
 	if err != nil {
+		metrics.ErrorCounter.Inc()
 		return nil, err
 	}
 
 	sm, err := getDialogState(userData.ID, store)
 	if err != nil {
+		metrics.ErrorCounter.Inc()
 		return nil, err
 	}
 
 	if isResetMessage(&update) {
+		metrics.ResetCounter.Inc()
 		log.Infof("Received RESET message from USER %v", userData.ID)
 
 		response := []types.ReplyDTO{}
@@ -101,9 +112,11 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 			reply := createStartReply(store, userData)
 			return reply, nil
 		} else if isConnectionMessage {
+			metrics.ConnectAttemptCounter.Inc()
 			log.Info("Received CONNECT message")
 			targetUserId := store.GetConnectionTarget(&incomingConnectionId)
 			if targetUserId == nil {
+				metrics.ErrorCounter.Inc()
 				log.Warnf("Connection id %d does not exist", incomingConnectionId)
 				return []types.ReplyDTO{
 					{
@@ -117,6 +130,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 					},
 				}, nil
 			} else if *targetUserId == userData.ID {
+				metrics.ErrorCounter.Inc()
 				log.Warn("Trying to connect to yourself")
 				return []types.ReplyDTO{
 					{
@@ -167,6 +181,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 				}, nil
 			}
 		} else {
+			metrics.ErrorCounter.Inc()
 			log.Warn("unknown command, showing guide")
 			// Irrelevant - show guide
 			return []types.ReplyDTO{
@@ -201,10 +216,13 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 		case actions.ACTION_SELECT_EMPLOYEE:
 			nextRole1 = types.ROLE_EMPLOYEE
 			nextRole2 = types.ROLE_EMPLOYER
+			metrics.RoleSelectCounter.Inc()
 		case actions.ACTION_SELECT_EMPLOYER:
 			nextRole1 = types.ROLE_EMPLOYER
 			nextRole2 = types.ROLE_EMPLOYEE
+			metrics.RoleSelectCounter.Inc()
 		default:
+			metrics.ErrorCounter.Inc()
 			return []types.ReplyDTO{
 				{
 					UserId: userData.ID,
@@ -252,6 +270,8 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 		lower_bound, err := parseSalary(update.Message.Text)
 
 		if err != nil {
+			metrics.SalaryParseErrorCounter.Inc()
+			metrics.ErrorCounter.Inc()
 			return []types.ReplyDTO{
 				{
 					UserId: userData.ID,
@@ -286,6 +306,8 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 		upper_bound, err := parseSalary(update.Message.Text)
 
 		if err != nil {
+			metrics.SalaryParseErrorCounter.Inc()
+			metrics.ErrorCounter.Inc()
 			return []types.ReplyDTO{
 				{
 					UserId: userData.ID,
@@ -299,6 +321,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 			}, nil
 		} else {
 			if upper_bound > *s.LowerBound*UPPER_BOUND_MULTIPLIER {
+				metrics.ErrorCounter.Inc()
 				return []types.ReplyDTO{
 					{
 						UserId: userData.ID,
@@ -342,6 +365,8 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 
 				salary, err := solver.Solve(employeeRange, employerRange)
 				if err != nil {
+					metrics.ResultErrorCounter.Inc()
+					metrics.ErrorCounter.Inc()
 					var nextState1 types.State = &types.ResultErrorState{
 						OpponentId: s.OpponentId,
 						Role:       s.Role,
@@ -373,6 +398,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 						},
 					}, nil
 				}
+				metrics.ResultSuccessCounter.Inc()
 				var nextState1 types.State = &types.InitialState{}
 				var nextState2 types.State = &types.InitialState{}
 
@@ -485,9 +511,11 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 				},
 			}, nil
 		default:
+			metrics.ErrorCounter.Inc()
 			return []types.ReplyDTO{}, nil
 		}
 	default:
+		metrics.ErrorCounter.Inc()
 		return []types.ReplyDTO{
 			{
 				UserId: userData.ID,

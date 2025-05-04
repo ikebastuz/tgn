@@ -9,6 +9,7 @@ import (
 
 	"github.com/gotd/contrib/middleware/floodwait"
 	"github.com/gotd/td/telegram"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/ikebastuz/tgn/bot"
 	"github.com/ikebastuz/tgn/router"
@@ -43,6 +44,8 @@ func main() {
 
 	log.Info("🔑 Starting bot with token:", config.TOKEN[:10]+"...")
 
+	// Add Prometheus metrics endpoint
+	http.Handle("/metrics", promhttp.Handler())
 	// Add healthcheck handler
 	http.HandleFunc("/health", router.HandleHealthCheck)
 	// Add webhook handler
