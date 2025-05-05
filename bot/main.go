@@ -64,6 +64,8 @@ func HandleMessage(ctx context.Context, client *telegram.Client, update types.Te
 		}
 	}
 
+	metrics.UsersStoreCounter.Set(float64(store.GetUsersCount()))
+
 	return nil
 }
 

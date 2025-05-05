@@ -5,16 +5,19 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// Define a metric
-var RequestCounter = prometheus.NewCounter(
-	prometheus.CounterOpts{
-		Name: "tgn_webhook_requests_total",
-		Help: "Total number of webhook requests",
-	},
-)
-
-// New metrics for bot flows
 var (
+	UsersStoreCounter = prometheus.NewGauge(
+		prometheus.GaugeOpts{
+			Name: "tgn_current_users_count",
+			Help: "Amount of users currently in state",
+		},
+	)
+	RequestCounter = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Name: "tgn_webhook_requests_total",
+			Help: "Total number of webhook requests",
+		},
+	)
 	ErrorCounter = prometheus.NewCounter(
 		prometheus.CounterOpts{
 			Name: "tgn_errors_total",
@@ -71,8 +74,9 @@ var (
 	)
 )
 
-func init() {
+func InitMetrics() {
 	log.Info("📊 Registering metrics")
+	prometheus.MustRegister(UsersStoreCounter)
 	prometheus.MustRegister(RequestCounter)
 	prometheus.MustRegister(ErrorCounter)
 	prometheus.MustRegister(ReplyCounter)

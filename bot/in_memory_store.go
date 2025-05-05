@@ -93,3 +93,7 @@ func (s *InMemoryStore) ResetUserState(userId *int64) error {
 	}
 	return nil
 }
+
+func (s *InMemoryStore) GetUsersCount() int {
+	return len(s.states)
+}

@@ -12,6 +12,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/ikebastuz/tgn/bot"
+	"github.com/ikebastuz/tgn/metrics"
 	"github.com/ikebastuz/tgn/router"
 	log "github.com/sirupsen/logrus"
 )
@@ -22,6 +23,8 @@ func main() {
 		FullTimestamp: true,
 		ForceColors:   true,
 	})
+
+	metrics.InitMetrics()
 
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()
