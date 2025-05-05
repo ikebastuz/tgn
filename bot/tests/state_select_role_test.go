@@ -1,25 +1,21 @@
-package bot
+package bot_test
 
 import (
 	"github.com/ikebastuz/tgn/actions"
+	"github.com/ikebastuz/tgn/bot"
 	"github.com/ikebastuz/tgn/types"
 	"testing"
 )
 
 func TestCreateReplySelectRole(t *testing.T) {
 	t.Run("SELECT ROLE state - selected EMPLOYEE - update both users and ask for lower bounds", func(t *testing.T) {
-		store := NewInMemoryStore()
-		sm1 := types.StateMachine{}
-		sm1.SetState(&types.SelectYourRoleState{
+		store := bot.NewInMemoryStore()
+		store.SetDialogState(&TEST_USER_ID, &types.SelectYourRoleState{
 			OpponentId: &TEST_USER_ID_2,
 		})
-		store.states[TEST_USER_ID] = &sm1
-
-		sm2 := types.StateMachine{}
-		sm2.SetState(&types.SelectYourRoleState{
+		store.SetDialogState(&TEST_USER_ID_2, &types.SelectYourRoleState{
 			OpponentId: &TEST_USER_ID,
 		})
-		store.states[TEST_USER_ID_2] = &sm2
 
 		var nextState1 types.State = &types.SelectLowerBoundsState{
 			OpponentId: &TEST_USER_ID_2,
@@ -34,7 +30,7 @@ func TestCreateReplySelectRole(t *testing.T) {
 				UserId: TEST_FROM.ID,
 				Messages: []types.ReplyMessage{
 					{
-						Message:     createSelectLowerBoundsMessage(types.ROLE_EMPLOYEE),
+						Message:     bot.CreateSelectLowerBoundsMessage(types.ROLE_EMPLOYEE),
 						ReplyMarkup: nil,
 					},
 				},
@@ -44,7 +40,7 @@ func TestCreateReplySelectRole(t *testing.T) {
 				UserId: TEST_FROM_2.ID,
 				Messages: []types.ReplyMessage{
 					{
-						Message:     createSelectLowerBoundsMessage(types.ROLE_EMPLOYER),
+						Message:     bot.CreateSelectLowerBoundsMessage(types.ROLE_EMPLOYER),
 						ReplyMarkup: nil,
 					},
 				},
@@ -64,7 +60,7 @@ func TestCreateReplySelectRole(t *testing.T) {
 			},
 		}
 
-		got, err := createReply(update, store)
+		got, err := bot.CreateReply(update, store)
 		if err != nil {
 			t.Errorf("shouldn't have error")
 		}
@@ -72,18 +68,13 @@ func TestCreateReplySelectRole(t *testing.T) {
 	})
 
 	t.Run("SELECT ROLE state - selected EMPLOYER - update both users and ask for lower bounds", func(t *testing.T) {
-		store := NewInMemoryStore()
-		sm1 := types.StateMachine{}
-		sm1.SetState(&types.SelectYourRoleState{
+		store := bot.NewInMemoryStore()
+		store.SetDialogState(&TEST_USER_ID, &types.SelectYourRoleState{
 			OpponentId: &TEST_USER_ID_2,
 		})
-		store.states[TEST_USER_ID] = &sm1
-
-		sm2 := types.StateMachine{}
-		sm2.SetState(&types.SelectYourRoleState{
+		store.SetDialogState(&TEST_USER_ID_2, &types.SelectYourRoleState{
 			OpponentId: &TEST_USER_ID,
 		})
-		store.states[TEST_USER_ID_2] = &sm2
 
 		var nextState1 types.State = &types.SelectLowerBoundsState{
 			OpponentId: &TEST_USER_ID_2,
@@ -98,7 +89,7 @@ func TestCreateReplySelectRole(t *testing.T) {
 				UserId: TEST_FROM.ID,
 				Messages: []types.ReplyMessage{
 					{
-						Message:     createSelectLowerBoundsMessage(types.ROLE_EMPLOYER),
+						Message:     bot.CreateSelectLowerBoundsMessage(types.ROLE_EMPLOYER),
 						ReplyMarkup: nil,
 					},
 				},
@@ -108,7 +99,7 @@ func TestCreateReplySelectRole(t *testing.T) {
 				UserId: TEST_FROM_2.ID,
 				Messages: []types.ReplyMessage{
 					{
-						Message:     createSelectLowerBoundsMessage(types.ROLE_EMPLOYEE),
+						Message:     bot.CreateSelectLowerBoundsMessage(types.ROLE_EMPLOYEE),
 						ReplyMarkup: nil,
 					},
 				},
@@ -128,7 +119,7 @@ func TestCreateReplySelectRole(t *testing.T) {
 			},
 		}
 
-		got, err := createReply(update, store)
+		got, err := bot.CreateReply(update, store)
 		if err != nil {
 			t.Errorf("shouldn't have error")
 		}
@@ -136,26 +127,21 @@ func TestCreateReplySelectRole(t *testing.T) {
 	})
 
 	t.Run("SELECT ROLE state - received unexpected data - prompt for role again", func(t *testing.T) {
-		store := NewInMemoryStore()
-		sm1 := types.StateMachine{}
-		sm1.SetState(&types.SelectYourRoleState{
+		store := bot.NewInMemoryStore()
+		store.SetDialogState(&TEST_USER_ID, &types.SelectYourRoleState{
 			OpponentId: &TEST_USER_ID_2,
 		})
-		store.states[TEST_USER_ID] = &sm1
-
-		sm2 := types.StateMachine{}
-		sm2.SetState(&types.SelectYourRoleState{
+		store.SetDialogState(&TEST_USER_ID_2, &types.SelectYourRoleState{
 			OpponentId: &TEST_USER_ID,
 		})
-		store.states[TEST_USER_ID_2] = &sm2
 
 		want := []types.ReplyDTO{
 			{
 				UserId: TEST_FROM.ID,
 				Messages: []types.ReplyMessage{
 					{
-						Message:     MESSAGE_SELECT_YOUR_ROLE_UNEXPECTED,
-						ReplyMarkup: KEYBOARD_SELECT_YOUR_ROLE,
+						Message:     bot.MESSAGE_SELECT_YOUR_ROLE_UNEXPECTED,
+						ReplyMarkup: bot.KEYBOARD_SELECT_YOUR_ROLE,
 					},
 				},
 			},
@@ -173,7 +159,7 @@ func TestCreateReplySelectRole(t *testing.T) {
 			},
 		}
 
-		got, err := createReply(update, store)
+		got, err := bot.CreateReply(update, store)
 		if err != nil {
 			t.Errorf("shouldn't have error")
 		}
@@ -181,26 +167,21 @@ func TestCreateReplySelectRole(t *testing.T) {
 	})
 
 	t.Run("SELECT ROLE state - received text message - prompt for role again", func(t *testing.T) {
-		store := NewInMemoryStore()
-		sm1 := types.StateMachine{}
-		sm1.SetState(&types.SelectYourRoleState{
+		store := bot.NewInMemoryStore()
+		store.SetDialogState(&TEST_USER_ID, &types.SelectYourRoleState{
 			OpponentId: &TEST_USER_ID_2,
 		})
-		store.states[TEST_USER_ID] = &sm1
-
-		sm2 := types.StateMachine{}
-		sm2.SetState(&types.SelectYourRoleState{
+		store.SetDialogState(&TEST_USER_ID_2, &types.SelectYourRoleState{
 			OpponentId: &TEST_USER_ID,
 		})
-		store.states[TEST_USER_ID_2] = &sm2
 
 		want := []types.ReplyDTO{
 			{
 				UserId: TEST_FROM.ID,
 				Messages: []types.ReplyMessage{
 					{
-						Message:     MESSAGE_SELECT_YOUR_ROLE_UNEXPECTED,
-						ReplyMarkup: KEYBOARD_SELECT_YOUR_ROLE,
+						Message:     bot.MESSAGE_SELECT_YOUR_ROLE_UNEXPECTED,
+						ReplyMarkup: bot.KEYBOARD_SELECT_YOUR_ROLE,
 					},
 				},
 			},
@@ -215,7 +196,7 @@ func TestCreateReplySelectRole(t *testing.T) {
 			},
 		}
 
-		got, err := createReply(update, store)
+		got, err := bot.CreateReply(update, store)
 		if err != nil {
 			t.Errorf("shouldn't have error")
 		}

@@ -1,18 +1,17 @@
-package bot
+package bot_test
 
 import (
+	"github.com/ikebastuz/tgn/bot"
 	"github.com/ikebastuz/tgn/types"
 	"testing"
 )
 
 func TestCreateReplyWaiting(t *testing.T) {
 	t.Run("WAITING state, - tells about waiting for connection", func(t *testing.T) {
-		store := NewInMemoryStore()
-		sm := types.StateMachine{}
-		sm.SetState(&types.WaitingForConnectState{
+		store := bot.NewInMemoryStore()
+		store.SetDialogState(&TEST_USER_ID, &types.WaitingForConnectState{
 			ConnectionId: &TEST_CONNECTION_ID,
 		})
-		store.states[TEST_FROM.ID] = &sm
 
 		var FROM = types.From{
 			ID:       int64(TEST_USER_ID),
@@ -23,7 +22,7 @@ func TestCreateReplyWaiting(t *testing.T) {
 				UserId: FROM.ID,
 				Messages: []types.ReplyMessage{
 					{
-						Message:     MESSAGE_WAITING_FOR_CONNECTION,
+						Message:     bot.MESSAGE_WAITING_FOR_CONNECTION,
 						ReplyMarkup: nil,
 					},
 				},
@@ -39,7 +38,7 @@ func TestCreateReplyWaiting(t *testing.T) {
 			},
 		}
 
-		got, err := createReply(update, store)
+		got, err := bot.CreateReply(update, store)
 		if err != nil {
 			t.Errorf("shouldn't have error")
 		}

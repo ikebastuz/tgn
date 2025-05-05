@@ -1,34 +1,30 @@
-package bot
+package bot_test
 
 import (
 	"testing"
 
+	"github.com/ikebastuz/tgn/bot"
 	"github.com/ikebastuz/tgn/types"
 )
 
 func TestCreateReplyEdge(t *testing.T) {
 	t.Run("ANY state with /reset - should set to initial state", func(t *testing.T) {
-		store := NewInMemoryStore()
-		sm1 := types.StateMachine{}
-		sm1.SetState(&types.SelectLowerBoundsState{
+		store := bot.NewInMemoryStore()
+		store.SetDialogState(&TEST_USER_ID, &types.SelectLowerBoundsState{
 			OpponentId: &TEST_USER_ID_2,
 			Role:       types.ROLE_EMPLOYEE,
 		})
-		store.states[TEST_USER_ID] = &sm1
-
-		sm2 := types.StateMachine{}
-		sm2.SetState(&types.SelectLowerBoundsState{
+		store.SetDialogState(&TEST_USER_ID_2, &types.SelectLowerBoundsState{
 			OpponentId: &TEST_USER_ID,
 			Role:       types.ROLE_EMPLOYER,
 		})
-		store.states[TEST_USER_ID_2] = &sm2
 
 		want := []types.ReplyDTO{
 			{
 				UserId: TEST_USER_ID_2,
 				Messages: []types.ReplyMessage{
 					{
-						Message:     MESSAGE_START_GUIDE,
+						Message:     bot.MESSAGE_START_GUIDE,
 						ReplyMarkup: nil,
 					},
 				},
@@ -37,7 +33,7 @@ func TestCreateReplyEdge(t *testing.T) {
 				UserId: TEST_USER_ID,
 				Messages: []types.ReplyMessage{
 					{
-						Message:     MESSAGE_START_GUIDE,
+						Message:     bot.MESSAGE_START_GUIDE,
 						ReplyMarkup: nil,
 					},
 				},
@@ -53,7 +49,7 @@ func TestCreateReplyEdge(t *testing.T) {
 			},
 		}
 
-		got, err := createReply(update, store)
+		got, err := bot.CreateReply(update, store)
 		if err != nil {
 			t.Errorf("shouldn't have error")
 		}
@@ -71,17 +67,15 @@ func TestCreateReplyEdge(t *testing.T) {
 	})
 
 	t.Run("UNEXPECTED state - should suggest the user to reset the state", func(t *testing.T) {
-		store := NewInMemoryStore()
-		sm := types.StateMachine{}
-		sm.SetState(&types.UnexpectedState{})
-		store.states[TEST_USER_ID] = &sm
+		store := bot.NewInMemoryStore()
+		store.SetDialogState(&TEST_USER_ID, &types.UnexpectedState{})
 
 		want := []types.ReplyDTO{
 			{
 				UserId: TEST_FROM.ID,
 				Messages: []types.ReplyMessage{
 					{
-						Message:     MESSAGE_UNEXPECTED_STATE,
+						Message:     bot.MESSAGE_UNEXPECTED_STATE,
 						ReplyMarkup: nil,
 					},
 				},
@@ -97,7 +91,7 @@ func TestCreateReplyEdge(t *testing.T) {
 			},
 		}
 
-		got, err := createReply(update, store)
+		got, err := bot.CreateReply(update, store)
 		if err != nil {
 			t.Errorf("shouldn't have error")
 		}

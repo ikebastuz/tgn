@@ -18,7 +18,7 @@ const UPPER_BOUND_MULTIPLIER int64 = 3
 
 func HandleMessage(ctx context.Context, client *telegram.Client, update types.TelegramUpdate, store types.Store) error {
 	metrics.RequestCounter.Inc()
-	replies, err := createReply(update, store)
+	replies, err := CreateReply(update, store)
 	if err != nil {
 		metrics.ErrorCounter.Inc()
 		log.Errorf("❌ Failed to create reply: %v", err)
@@ -69,7 +69,7 @@ func HandleMessage(ctx context.Context, client *telegram.Client, update types.Te
 	return nil
 }
 
-func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyDTO, error) {
+func CreateReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyDTO, error) {
 	userData, err := getUserData(update)
 	if err != nil {
 		metrics.ErrorCounter.Inc()
@@ -250,7 +250,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 				UserId: userData.ID,
 				Messages: []types.ReplyMessage{
 					{
-						Message:     createSelectLowerBoundsMessage(nextRole1),
+						Message:     CreateSelectLowerBoundsMessage(nextRole1),
 						ReplyMarkup: nil,
 					},
 				},
@@ -260,7 +260,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 				UserId: *s.OpponentId,
 				Messages: []types.ReplyMessage{
 					{
-						Message:     createSelectLowerBoundsMessage(nextRole2),
+						Message:     CreateSelectLowerBoundsMessage(nextRole2),
 						ReplyMarkup: nil,
 					},
 				},
@@ -295,7 +295,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 					UserId: userData.ID,
 					Messages: []types.ReplyMessage{
 						{
-							Message:     createSelectUpperBoundMessage(s.Role),
+							Message:     CreateSelectUpperBoundMessage(s.Role),
 							ReplyMarkup: nil,
 						},
 					},
@@ -328,7 +328,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 						UserId: userData.ID,
 						Messages: []types.ReplyMessage{
 							{
-								Message:     createUseValidUpperBoundMessage(),
+								Message:     CreateUseValidUpperBoundMessage(),
 								ReplyMarkup: nil,
 							},
 						},
@@ -408,7 +408,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 						UserId: userData.ID,
 						Messages: []types.ReplyMessage{
 							{
-								Message:     createResultMessage(salary),
+								Message:     CreateResultMessage(salary),
 								ReplyMarkup: nil,
 							},
 						},
@@ -418,7 +418,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 						UserId: *s.OpponentId,
 						Messages: []types.ReplyMessage{
 							{
-								Message:     createResultMessage(salary),
+								Message:     CreateResultMessage(salary),
 								ReplyMarkup: nil,
 							},
 						},
@@ -494,7 +494,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 					UserId: userData.ID,
 					Messages: []types.ReplyMessage{
 						{
-							Message:     createSelectLowerBoundsMessage(s.Role),
+							Message:     CreateSelectLowerBoundsMessage(s.Role),
 							ReplyMarkup: nil,
 						},
 					},
@@ -504,7 +504,7 @@ func createReply(update types.TelegramUpdate, store types.Store) ([]types.ReplyD
 					UserId: *s.OpponentId,
 					Messages: []types.ReplyMessage{
 						{
-							Message:     createSelectLowerBoundsMessage(opponentRole),
+							Message:     CreateSelectLowerBoundsMessage(opponentRole),
 							ReplyMarkup: nil,
 						},
 					},

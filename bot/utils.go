@@ -13,7 +13,7 @@ const CONNECTION_PATTERN = `^\s*/connect\s+(\d+)\s*$`
 const START_PATTERN = `(?s).*/start.*`
 const RESET_PATTERN = `(?s).*/reset.*`
 
-func createSelectUpperBoundMessage(role types.Role) string {
+func CreateSelectUpperBoundMessage(role types.Role) string {
 	var message string
 	switch role {
 	case types.ROLE_EMPLOYEE:
@@ -21,22 +21,22 @@ func createSelectUpperBoundMessage(role types.Role) string {
 	case types.ROLE_EMPLOYER:
 		message = MESSAGE_SELECT_SALARY_UPPER_BOUND_EMPLOYER
 	}
-	return fmt.Sprintf("%s\n%s", message, createUseValidUpperBoundMessage())
+	return fmt.Sprintf("%s\n%s", message, CreateUseValidUpperBoundMessage())
 }
 
-func createUseValidUpperBoundMessage() string {
+func CreateUseValidUpperBoundMessage() string {
 	return fmt.Sprintf(MESSAGE_USE_VALID_UPPER_BOUND, UPPER_BOUND_MULTIPLIER)
 }
 
-func createConnectionMessage(userName string, connectionId int64) string {
+func CreateConnectionMessage(userName string, connectionId int64) string {
 	return fmt.Sprintf(MESSAGE_FORWARD_CONNECTION_01, userName, connectionId)
 }
 
-func createResultMessage(salary int64) string {
+func CreateResultMessage(salary int64) string {
 	return fmt.Sprintf(MESSAGE_RESULT_SUCCESS, salary)
 }
 
-func createSelectLowerBoundsMessage(role types.Role) string {
+func CreateSelectLowerBoundsMessage(role types.Role) string {
 	var message string
 	switch role {
 	case types.ROLE_EMPLOYEE:
@@ -137,7 +137,7 @@ func createStartReply(store types.Store, userData *types.From) []types.ReplyDTO 
 			UserId: userData.ID,
 			Messages: []types.ReplyMessage{
 				{
-					Message:     createConnectionMessage(userData.USERNAME, newConnectionId),
+					Message:     CreateConnectionMessage(userData.USERNAME, newConnectionId),
 					ReplyMarkup: nil,
 				},
 			},

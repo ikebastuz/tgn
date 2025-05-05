@@ -8,4 +8,5 @@ type Store interface {
 	ResetUserState(userId *int64) error
 	SetDialogState(userId *int64, state State)
 	GetUsersCount() int
+	SetConnectionId(from, to int64)
 }

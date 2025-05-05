@@ -1,27 +1,26 @@
-package bot
+package bot_test
 
 import (
 	"fmt"
+	"github.com/ikebastuz/tgn/bot"
 	"github.com/ikebastuz/tgn/types"
 	"testing"
 )
 
 func TestCreateReplySelectLB(t *testing.T) {
 	t.Run("SELECT LOWER BOUNDS state - show error message on invalid value", func(t *testing.T) {
-		store := NewInMemoryStore()
-		sm := types.StateMachine{}
-		sm.SetState(&types.SelectLowerBoundsState{
+		store := bot.NewInMemoryStore()
+		store.SetDialogState(&TEST_USER_ID, &types.SelectLowerBoundsState{
 			OpponentId: &TEST_FROM_2.ID,
 			Role:       types.ROLE_EMPLOYEE,
 		})
-		store.states[TEST_USER_ID] = &sm
 
 		want := []types.ReplyDTO{
 			{
 				UserId: TEST_FROM.ID,
 				Messages: []types.ReplyMessage{
 					{
-						Message:     MESSAGE_USE_VALID_POSITIVE_NUMBER,
+						Message:     bot.MESSAGE_USE_VALID_POSITIVE_NUMBER,
 						ReplyMarkup: nil,
 					},
 				},
@@ -37,19 +36,17 @@ func TestCreateReplySelectLB(t *testing.T) {
 			},
 		}
 
-		got, err := createReply(update, store)
+		got, err := bot.CreateReply(update, store)
 		assertNonErrorReply(t, got, want, err)
 	})
 
 	t.Run("SELECT LOWER BOUNDS state - proceed further to upper bounds state if number is correct", func(t *testing.T) {
 		var lower_bound int64 = 100500
-		store := NewInMemoryStore()
-		sm := types.StateMachine{}
-		sm.SetState(&types.SelectLowerBoundsState{
+		store := bot.NewInMemoryStore()
+		store.SetDialogState(&TEST_USER_ID, &types.SelectLowerBoundsState{
 			OpponentId: &TEST_USER_ID_2,
 			Role:       types.ROLE_EMPLOYEE,
 		})
-		store.states[TEST_USER_ID] = &sm
 
 		var nextState types.State = &types.SelectUpperBoundsState{
 			OpponentId: &TEST_USER_ID_2,
@@ -61,7 +58,7 @@ func TestCreateReplySelectLB(t *testing.T) {
 				UserId: TEST_FROM.ID,
 				Messages: []types.ReplyMessage{
 					{
-						Message:     createSelectUpperBoundMessage(types.ROLE_EMPLOYEE),
+						Message:     bot.CreateSelectUpperBoundMessage(types.ROLE_EMPLOYEE),
 						ReplyMarkup: nil,
 					},
 				},
@@ -78,7 +75,7 @@ func TestCreateReplySelectLB(t *testing.T) {
 			},
 		}
 
-		got, err := createReply(update, store)
+		got, err := bot.CreateReply(update, store)
 		assertNonErrorReply(t, got, want, err)
 	})
 }

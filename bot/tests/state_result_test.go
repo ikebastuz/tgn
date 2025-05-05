@@ -1,29 +1,24 @@
-package bot
+package bot_test
 
 import (
 	"testing"
 
 	"github.com/ikebastuz/tgn/actions"
+	"github.com/ikebastuz/tgn/bot"
 	"github.com/ikebastuz/tgn/types"
 )
 
 func TestCreateReplyResult(t *testing.T) {
 	t.Run("RESULT Error state - Selected No - Set both to initial state", func(t *testing.T) {
-		store := NewInMemoryStore()
-
-		sm1 := types.StateMachine{}
-		sm1.SetState(&types.ResultErrorState{
+		store := bot.NewInMemoryStore()
+		store.SetDialogState(&TEST_USER_ID, &types.ResultErrorState{
 			OpponentId: &TEST_USER_ID_2,
 			Role:       types.ROLE_EMPLOYEE,
 		})
-		store.states[TEST_USER_ID] = &sm1
-
-		sm2 := types.StateMachine{}
-		sm2.SetState(&types.ResultErrorState{
+		store.SetDialogState(&TEST_USER_ID_2, &types.ResultErrorState{
 			OpponentId: &TEST_USER_ID,
 			Role:       types.ROLE_EMPLOYEE,
 		})
-		store.states[TEST_USER_ID_2] = &sm2
 
 		var nextState types.State = &types.InitialState{}
 
@@ -32,7 +27,7 @@ func TestCreateReplyResult(t *testing.T) {
 				UserId: TEST_FROM.ID,
 				Messages: []types.ReplyMessage{
 					{
-						Message:     MESSAGE_START_GUIDE,
+						Message:     bot.MESSAGE_START_GUIDE,
 						ReplyMarkup: nil,
 					},
 				},
@@ -42,7 +37,7 @@ func TestCreateReplyResult(t *testing.T) {
 				UserId: TEST_USER_ID_2,
 				Messages: []types.ReplyMessage{
 					{
-						Message:     MESSAGE_START_GUIDE,
+						Message:     bot.MESSAGE_START_GUIDE,
 						ReplyMarkup: nil,
 					},
 				},
@@ -62,26 +57,20 @@ func TestCreateReplyResult(t *testing.T) {
 			},
 		}
 
-		got, err := createReply(update, store)
+		got, err := bot.CreateReply(update, store)
 		assertNonErrorReply(t, got, want, err)
 	})
 
 	t.Run("RESULT Error state - Selected Yes - Move to select lower bounds state", func(t *testing.T) {
-		store := NewInMemoryStore()
-
-		sm1 := types.StateMachine{}
-		sm1.SetState(&types.ResultErrorState{
+		store := bot.NewInMemoryStore()
+		store.SetDialogState(&TEST_USER_ID, &types.ResultErrorState{
 			OpponentId: &TEST_USER_ID_2,
 			Role:       types.ROLE_EMPLOYEE,
 		})
-		store.states[TEST_USER_ID] = &sm1
-
-		sm2 := types.StateMachine{}
-		sm2.SetState(&types.ResultErrorState{
+		store.SetDialogState(&TEST_USER_ID_2, &types.ResultErrorState{
 			OpponentId: &TEST_USER_ID,
 			Role:       types.ROLE_EMPLOYER,
 		})
-		store.states[TEST_USER_ID_2] = &sm2
 
 		var nextState1 types.State = &types.SelectLowerBoundsState{
 			OpponentId: &TEST_USER_ID_2,
@@ -97,7 +86,7 @@ func TestCreateReplyResult(t *testing.T) {
 				UserId: TEST_FROM.ID,
 				Messages: []types.ReplyMessage{
 					{
-						Message:     createSelectLowerBoundsMessage(types.ROLE_EMPLOYEE),
+						Message:     bot.CreateSelectLowerBoundsMessage(types.ROLE_EMPLOYEE),
 						ReplyMarkup: nil,
 					},
 				},
@@ -107,7 +96,7 @@ func TestCreateReplyResult(t *testing.T) {
 				UserId: TEST_USER_ID_2,
 				Messages: []types.ReplyMessage{
 					{
-						Message:     createSelectLowerBoundsMessage(types.ROLE_EMPLOYER),
+						Message:     bot.CreateSelectLowerBoundsMessage(types.ROLE_EMPLOYER),
 						ReplyMarkup: nil,
 					},
 				},
@@ -127,7 +116,7 @@ func TestCreateReplyResult(t *testing.T) {
 			},
 		}
 
-		got, err := createReply(update, store)
+		got, err := bot.CreateReply(update, store)
 		assertNonErrorReply(t, got, want, err)
 	})
 }

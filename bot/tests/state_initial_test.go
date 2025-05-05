@@ -1,9 +1,10 @@
-package bot
+package bot_test
 
 import (
 	"fmt"
 	"testing"
 
+	"github.com/ikebastuz/tgn/bot"
 	"github.com/ikebastuz/tgn/types"
 )
 
@@ -15,7 +16,7 @@ var TEST_WAITING_FOR_CONNECT_REPLY []types.ReplyDTO = []types.ReplyDTO{
 		UserId: TEST_FROM.ID,
 		Messages: []types.ReplyMessage{
 			{
-				Message:     createConnectionMessage(TEST_FROM.USERNAME, TEST_CONNECTION_ID),
+				Message:     bot.CreateConnectionMessage(TEST_FROM.USERNAME, TEST_CONNECTION_ID),
 				ReplyMarkup: nil,
 			},
 		},
@@ -25,7 +26,7 @@ var TEST_WAITING_FOR_CONNECT_REPLY []types.ReplyDTO = []types.ReplyDTO{
 		UserId: TEST_FROM.ID,
 		Messages: []types.ReplyMessage{
 			{
-				Message:     MESSAGE_FORWARD_CONNECTION_02,
+				Message:     bot.MESSAGE_FORWARD_CONNECTION_02,
 				ReplyMarkup: nil,
 			},
 		},
@@ -34,14 +35,14 @@ var TEST_WAITING_FOR_CONNECT_REPLY []types.ReplyDTO = []types.ReplyDTO{
 
 func TestCreateReplyInitial(t *testing.T) {
 	t.Run("INITIAL state, irrelevant message - should show guide", func(t *testing.T) {
-		store := NewInMemoryStore()
+		store := bot.NewInMemoryStore()
 
 		want := []types.ReplyDTO{
 			{
 				UserId: TEST_FROM.ID,
 				Messages: []types.ReplyMessage{
 					{
-						Message:     MESSAGE_START_GUIDE,
+						Message:     bot.MESSAGE_START_GUIDE,
 						ReplyMarkup: nil,
 					},
 				},
@@ -54,15 +55,13 @@ func TestCreateReplyInitial(t *testing.T) {
 			},
 		}
 
-		got, err := createReply(update, store)
+		got, err := bot.CreateReply(update, store)
 		assertNonErrorReply(t, got, want, err)
 	})
 
 	t.Run("INITIAL state, /start message - create connection to forward", func(t *testing.T) {
-		store := NewInMemoryStore()
-		sm := types.StateMachine{}
-		sm.SetState(&types.InitialState{})
-		store.states[TEST_USER_ID] = &sm
+		store := bot.NewInMemoryStore()
+		store.SetDialogState(&TEST_USER_ID, &types.InitialState{})
 
 		update := types.TelegramUpdate{
 			Message: types.Message{
@@ -71,22 +70,22 @@ func TestCreateReplyInitial(t *testing.T) {
 			},
 		}
 
-		got, err := createReply(update, store)
+		got, err := bot.CreateReply(update, store)
 
 		// TODO: test with correct connection id
 		assertSingleReply(t, got[1], TEST_WAITING_FOR_CONNECT_REPLY[1], err)
 	})
 
 	t.Run("INITIAL state, /connect message to yourself - should show an error", func(t *testing.T) {
-		store := NewInMemoryStore()
-		store.connections[TEST_CONNECTION_ID] = TEST_USER_ID
+		store := bot.NewInMemoryStore()
+		store.SetConnectionId(TEST_CONNECTION_ID, TEST_USER_ID)
 
 		want := []types.ReplyDTO{
 			{
 				UserId: TEST_FROM.ID,
 				Messages: []types.ReplyMessage{
 					{
-						Message:     MESSAGE_YOU_CANT_CONNECT_TO_YOURSELF,
+						Message:     bot.MESSAGE_YOU_CANT_CONNECT_TO_YOURSELF,
 						ReplyMarkup: nil,
 					},
 				},
@@ -100,18 +99,18 @@ func TestCreateReplyInitial(t *testing.T) {
 			},
 		}
 
-		got, err := createReply(update, store)
+		got, err := bot.CreateReply(update, store)
 		assertNonErrorReply(t, got, want, err)
 	})
 
 	t.Run("INITIAL state, /connect message to non-existent user - should show an error", func(t *testing.T) {
-		store := NewInMemoryStore()
+		store := bot.NewInMemoryStore()
 		want := []types.ReplyDTO{
 			{
 				UserId: TEST_FROM.ID,
 				Messages: []types.ReplyMessage{
 					{
-						Message:     MESSAGE_NO_SUCH_USER_IS_AWATING,
+						Message:     bot.MESSAGE_NO_SUCH_USER_IS_AWATING,
 						ReplyMarkup: nil,
 					},
 				},
@@ -125,18 +124,16 @@ func TestCreateReplyInitial(t *testing.T) {
 			},
 		}
 
-		got, err := createReply(update, store)
+		got, err := bot.CreateReply(update, store)
 		assertNonErrorReply(t, got, want, err)
 	})
 
 	t.Run("INITIAL state, /connect message to existing user - should connect correctly", func(t *testing.T) {
-		store := NewInMemoryStore()
-		sm := types.StateMachine{}
-		sm.SetState(&types.WaitingForConnectState{
+		store := bot.NewInMemoryStore()
+		store.SetDialogState(&TEST_USER_ID, &types.WaitingForConnectState{
 			ConnectionId: &TEST_CONNECTION_ID,
 		})
-		store.states[TEST_USER_ID] = &sm
-		store.connections[TEST_CONNECTION_ID] = TEST_USER_ID
+		store.SetConnectionId(TEST_CONNECTION_ID, TEST_USER_ID)
 
 		var nextState1 types.State = &types.SelectYourRoleState{
 			OpponentId: &TEST_FROM_2.ID,
@@ -150,8 +147,8 @@ func TestCreateReplyInitial(t *testing.T) {
 				UserId: TEST_FROM_2.ID,
 				Messages: []types.ReplyMessage{
 					{
-						Message:     MESSAGE_SELECT_YOUR_ROLE_CONNECTED,
-						ReplyMarkup: KEYBOARD_SELECT_YOUR_ROLE,
+						Message:     bot.MESSAGE_SELECT_YOUR_ROLE_CONNECTED,
+						ReplyMarkup: bot.KEYBOARD_SELECT_YOUR_ROLE,
 					},
 				},
 				NextState: &nextState2,
@@ -160,8 +157,8 @@ func TestCreateReplyInitial(t *testing.T) {
 				UserId: TEST_FROM.ID,
 				Messages: []types.ReplyMessage{
 					{
-						Message:     MESSAGE_SELECT_YOUR_ROLE_CONNECTED,
-						ReplyMarkup: KEYBOARD_SELECT_YOUR_ROLE,
+						Message:     bot.MESSAGE_SELECT_YOUR_ROLE_CONNECTED,
+						ReplyMarkup: bot.KEYBOARD_SELECT_YOUR_ROLE,
 					},
 				},
 				NextState: &nextState1,
@@ -175,7 +172,7 @@ func TestCreateReplyInitial(t *testing.T) {
 			},
 		}
 
-		got, err := createReply(update, store)
+		got, err := bot.CreateReply(update, store)
 		assertNonErrorReply(t, got, want, err)
 	})
 }

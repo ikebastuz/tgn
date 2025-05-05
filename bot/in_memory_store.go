@@ -97,3 +97,7 @@ func (s *InMemoryStore) ResetUserState(userId *int64) error {
 func (s *InMemoryStore) GetUsersCount() int {
 	return len(s.states)
 }
+
+func (s *InMemoryStore) SetConnectionId(from, to int64) {
+	s.connections[from] = to
+}
