@@ -1,8 +1,8 @@
 package bot_test
 
 import (
-	"github.com/ikebastuz/tgn/actions"
 	"github.com/ikebastuz/tgn/bot"
+	"github.com/ikebastuz/tgn/bot/actions"
 	"github.com/ikebastuz/tgn/types"
 	"testing"
 )

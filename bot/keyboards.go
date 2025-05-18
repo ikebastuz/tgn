@@ -3,7 +3,7 @@ package bot
 import (
 	"github.com/gotd/td/tg"
 
-	"github.com/ikebastuz/tgn/actions"
+	"github.com/ikebastuz/tgn/bot/actions"
 )
 
 var KEYBOARD_SELECT_YOUR_ROLE = &tg.ReplyInlineMarkup{

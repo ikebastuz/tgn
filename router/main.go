@@ -7,14 +7,10 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	// "math/rand"
 	"net/http"
-	// "strconv"
 
 	"github.com/gotd/td/telegram"
-	// "github.com/gotd/td/tg"
 
-	// "github.com/ikebastuz/tgn/actions"
 	"github.com/ikebastuz/tgn/bot"
 	"github.com/ikebastuz/tgn/types"
 )
