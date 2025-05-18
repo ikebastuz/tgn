@@ -1,12 +1,12 @@
 package types
 
 type Store interface {
-	GetConnectionTarget(connectionId *int64) *int64
-	CreateConnectionId(userId *int64) int64
-	DeleteConnectionId(connectionId *int64) error
+	GetConnectionTarget(connectionId *int16) *int64
+	CreateConnectionId(userId *int64) int16
+	DeleteConnectionId(connectionId *int16) error
 	GetDialogState(userId *int64) *StateMachine
 	ResetUserState(userId *int64) error
 	SetDialogState(userId *int64, state State)
 	GetUsersCount() int
-	SetConnectionId(from, to int64)
+	SetConnectionId(from int16, to int64)
 }

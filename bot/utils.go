@@ -28,7 +28,7 @@ func CreateUseValidUpperBoundMessage() string {
 	return fmt.Sprintf(MESSAGE_USE_VALID_UPPER_BOUND, UPPER_BOUND_MULTIPLIER)
 }
 
-func CreateConnectionMessage(userName string, connectionId int64) string {
+func CreateConnectionMessage(userName string, connectionId int16) string {
 	return fmt.Sprintf(MESSAGE_FORWARD_CONNECTION_01, userName, connectionId)
 }
 
@@ -63,7 +63,7 @@ func getDialogState(userId int64, store types.Store) (*types.StateMachine, error
 	return dialogState, nil
 }
 
-func getConnectionId(update *types.TelegramUpdate) (int64, bool) {
+func getConnectionId(update *types.TelegramUpdate) (int16, bool) {
 	text := strings.TrimSpace(update.Message.Text)
 
 	re := regexp.MustCompile(CONNECTION_PATTERN)
@@ -72,11 +72,11 @@ func getConnectionId(update *types.TelegramUpdate) (int64, bool) {
 		matches := re.FindStringSubmatch(text)
 		idStr := matches[1]
 
-		id, err := strconv.ParseInt(idStr, 10, 64)
+		id, err := strconv.ParseInt(idStr, 10, 16)
 		if err != nil {
 			return 0, false
 		}
-		return id, true
+		return int16(id), true
 	}
 
 	return 0, false

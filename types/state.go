@@ -44,7 +44,7 @@ func (s *InitialState) GetState() StateType {
 }
 
 type WaitingForConnectState struct {
-	ConnectionId *int64
+	ConnectionId *int16
 }
 
 func (s *WaitingForConnectState) GetState() StateType {

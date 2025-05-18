@@ -9,7 +9,7 @@ import (
 
 type InMemoryStore struct {
 	states      map[int64]*types.StateMachine
-	connections map[int64]int64
+	connections map[int16]int64
 }
 
 var DEFAULT_DIALOG_STATE = types.InitialState{}
@@ -17,7 +17,7 @@ var DEFAULT_DIALOG_STATE = types.InitialState{}
 func NewInMemoryStore() *InMemoryStore {
 	return &InMemoryStore{
 		states:      make(map[int64]*types.StateMachine),
-		connections: make(map[int64]int64),
+		connections: make(map[int16]int64),
 	}
 }
 
@@ -43,7 +43,7 @@ func (s *InMemoryStore) SetDialogState(userId *int64, state types.State) {
 	s.states[*userId] = sm
 }
 
-func (s *InMemoryStore) CreateConnectionId(userId *int64) int64 {
+func (s *InMemoryStore) CreateConnectionId(userId *int64) int16 {
 	// Check if connection exists
 	if sm, exists := s.states[*userId]; exists {
 		s := sm.GetState()
@@ -53,9 +53,9 @@ func (s *InMemoryStore) CreateConnectionId(userId *int64) int64 {
 		}
 	}
 
-	var id int64
+	var id int16
 	for {
-		id = rand.Int63n(10000) + 1
+		id = int16(rand.Int63n(10000) + 1)
 		if _, exists := s.connections[id]; !exists {
 			break
 		}
@@ -64,14 +64,14 @@ func (s *InMemoryStore) CreateConnectionId(userId *int64) int64 {
 	return id
 }
 
-func (s *InMemoryStore) GetConnectionTarget(connectionId *int64) *int64 {
+func (s *InMemoryStore) GetConnectionTarget(connectionId *int16) *int64 {
 	if connection, exists := s.connections[*connectionId]; exists {
 		return &connection
 	}
 	return nil
 }
 
-func (s *InMemoryStore) DeleteConnectionId(connectionId *int64) error {
+func (s *InMemoryStore) DeleteConnectionId(connectionId *int16) error {
 	_, exists := s.connections[*connectionId]
 	if !exists {
 		return errors.New("no such connection")
@@ -98,6 +98,6 @@ func (s *InMemoryStore) GetUsersCount() int {
 	return len(s.states)
 }
 
-func (s *InMemoryStore) SetConnectionId(from, to int64) {
+func (s *InMemoryStore) SetConnectionId(from int16, to int64) {
 	s.connections[from] = to
 }

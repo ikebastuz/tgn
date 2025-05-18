@@ -18,7 +18,7 @@ var TEST_FROM_2 = types.From{
 	ID:       int64(TEST_USER_ID_2),
 	USERNAME: "hello 2",
 }
-var TEST_CONNECTION_ID int64 = 100500
+var TEST_CONNECTION_ID int16 = 1337
 
 func assertNonErrorReply(t testing.TB, got, want []types.ReplyDTO, err error) {
 	t.Helper()
