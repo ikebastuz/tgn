@@ -9,8 +9,8 @@ import (
 	"github.com/gotd/td/telegram"
 	"github.com/gotd/td/tg"
 	"github.com/ikebastuz/tgn/bot/actions"
+	"github.com/ikebastuz/tgn/bot/solver"
 	"github.com/ikebastuz/tgn/metrics"
-	"github.com/ikebastuz/tgn/solver"
 	"github.com/ikebastuz/tgn/types"
 )
 
