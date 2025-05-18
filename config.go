@@ -1,4 +1,4 @@
-package main
+package tgn
 
 import (
 	"errors"
@@ -15,7 +15,7 @@ type Config struct {
 	TOKEN    string
 }
 
-func getConfig() (*Config, error) {
+func GetConfig() (*Config, error) {
 	appIdString := os.Getenv("BOT_APP_ID")
 	if appIdString == "" {
 		return nil, errors.New("⚠️ Configuration error: BOT_APP_ID environment variable is missing")

@@ -11,6 +11,7 @@ import (
 	"github.com/gotd/td/telegram"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
+	"github.com/ikebastuz/tgn"
 	"github.com/ikebastuz/tgn/bot"
 	"github.com/ikebastuz/tgn/metrics"
 	"github.com/ikebastuz/tgn/router"
@@ -29,7 +30,7 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()
 
-	config, err := getConfig()
+	config, err := tgn.GetConfig()
 
 	if err != nil {
 		log.Fatalf("❌ Configuration error: %s", err)
