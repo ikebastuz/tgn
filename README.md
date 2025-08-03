@@ -51,3 +51,8 @@ go run cmd/webserver/main.go
 - **HTTP handlers** - Webhook, health check, metrics endpoints
 - **Testing** - Unit tests for solver algorithm and utilities
 - **Modules** - Go mod for dependency management
+
+## Set webhook
+
+POST https://api.telegram.org/bot<BOT_TOKEN>/setWebhook
+-d "url=https://tgn.al-ko.dev/webhook"
